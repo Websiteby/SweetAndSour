@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5" />
+    <title>Sweet & Sour · Product Details</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        .product-details-page { padding: 1rem 0 2rem; }
+        .breadcrumb { font-size: 0.8rem; color: var(--gray-500); margin-bottom: 1rem; }
+        .breadcrumb a { color: var(--primary-blue); }
+        .breadcrumb a:hover { text-decoration: underline; }
+        .product-details-layout { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+        .product-gallery {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 1rem;
+            border: 1px solid var(--gray-100);
+        }
+        .product-gallery .main-image {
+            width: 100%;
+            height: 300px;
+            background: var(--gray-100);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .product-gallery .main-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 0.5rem;
+            transition: transform 0.5s var(--transition-bounce);
+        }
+        .product-gallery .main-image:hover img { transform: scale(1.05); }
+        .product-gallery .thumbnails {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.8rem;
+            overflow-x: auto;
+            padding-bottom: 0.3rem;
+        }
+        .product-gallery .thumbnails img {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            border: 2px solid var(--gray-200);
+            cursor: pointer;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+        .product-gallery .thumbnails img:hover,
+        .product-gallery .thumbnails img.active { border-color: var(--primary-blue); }
+        .product-info {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 1.2rem 1.2rem 1.5rem;
+            border: 1px solid var(--gray-100);
+        }
+        .product-info .product-name { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.2rem; }
+        .product-info .product-rating {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.9rem;
+            color: #F59E0B;
+            margin-bottom: 0.4rem;
+        }
+        .product-info .product-rating .review-count { color: var(--gray-500); font-size: 0.8rem; }
+        .product-info .product-price {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 0.3rem;
+        }
+        .product-info .product-price .current { font-size: 1.6rem; font-weight: 800; color: var(--primary-blue); }
+        .product-info .product-price .old { font-size: 1rem; color: var(--gray-400); text-decoration: line-through; }
+        .product-info .product-price .discount {
+            background: var(--primary-blue);
+            color: var(--white);
+            padding: 0.05rem 0.6rem;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .product-info .product-sku {
+            font-size: 0.8rem;
+            color: var(--gray-500);
+            margin-bottom: 0.3rem;
+        }
+        .product-info .product-sku .sku-value {
+            color: var(--primary-blue);
+            font-weight: 600;
+            background: var(--primary-blue-light);
+            padding: 0.05rem 0.5rem;
+            border-radius: var(--radius-full);
+        }
+        .product-info .product-description {
+            color: var(--gray-600);
+            font-size: 0.95rem;
+            margin: 0.5rem 0 1rem;
+            line-height: 1.7;
+        }
+        .product-info .product-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin: 1rem 0;
+            align-items: center;
+        }
+        .product-info .product-actions .qty-control {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-full);
+            padding: 0.1rem 0.1rem;
+        }
+        .product-info .product-actions .qty-control button {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: var(--transition);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+        .product-info .product-actions .qty-control button:hover { background: var(--gray-100); }
+        .product-info .product-actions .qty-control button:disabled { opacity: 0.3; cursor: not-allowed; }
+        .product-info .product-actions .qty-control span {
+            min-width: 30px;
+            text-align: center;
+            font-weight: 600;
+        }
+        .product-info .product-actions .btn-primary { padding: 0.6rem 1.6rem; }
+        .product-info .product-actions .btn-buy-now {
+            padding: 0.6rem 1.6rem;
+            background: linear-gradient(135deg, #25D366 0%, #1DA851 100%);
+            color: var(--white);
+            border-radius: var(--radius-full);
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 16px rgba(37, 211, 102, 0.3);
+        }
+        .product-info .product-actions .btn-buy-now:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(37, 211, 102, 0.45);
+        }
+        .product-info .product-actions .btn-buy-now:disabled {
+            opacity: 0.5; cursor: not-allowed; transform: none;
+        }
+        .product-info .product-actions .btn-wishlist {
+            padding: 0.6rem 1.2rem;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: var(--white);
+            cursor: pointer;
+        }
+        .product-info .product-actions .btn-wishlist.active {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+            background: var(--primary-blue-light);
+        }
+        .product-info .product-actions .btn-wishlist:hover { border-color: var(--primary-blue); }
+        .product-info .product-actions .btn-share {
+            padding: 0.6rem 1rem;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: var(--white);
+            cursor: pointer;
+            color: var(--gray-600);
+        }
+        .product-info .product-actions .btn-share:hover { border-color: var(--primary-blue); color: var(--primary-blue); }
+        .product-info .product-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.4rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--gray-100);
+            font-size: 0.85rem;
+            color: var(--gray-600);
+        }
+        .product-info .product-meta span strong { color: var(--dark-text); }
+        .product-info .product-flavours {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin: 0.5rem 0;
+        }
+        .product-info .product-flavours .flavour-tag {
+            background: var(--gray-100);
+            padding: 0.15rem 0.8rem;
+            border-radius: var(--radius-full);
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--gray-600);
+        }
+
+        .reviews-section {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            border: 1px solid var(--gray-100);
+            margin-top: 1.5rem;
+        }
+        .reviews-section h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .reviews-section h3 i { color: var(--primary-blue); }
+        .review-summary {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--gray-100);
+            flex-wrap: wrap;
+        }
+        .review-summary .avg-box { text-align: center; min-width: 80px; }
+        .review-summary .avg-box .avg-num { font-size: 2.2rem; font-weight: 800; color: var(--primary-blue); line-height: 1; }
+        .review-summary .avg-box .avg-stars { color: #F59E0B; font-size: 0.9rem; }
+        .review-summary .avg-box .avg-count { font-size: 0.7rem; color: var(--gray-500); }
+        .review-summary .rating-bars { flex: 1; min-width: 180px; }
+        .review-summary .rating-bars .rb-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            margin-bottom: 0.2rem;
+        }
+        .review-summary .rating-bars .rb-row .rb-label { width: 28px; color: var(--gray-500); }
+        .review-summary .rating-bars .rb-row .rb-bar { flex: 1; height: 6px; background: var(--gray-100); border-radius: 3px; overflow: hidden; }
+        .review-summary .rating-bars .rb-row .rb-fill { height: 100%; background: #F59E0B; }
+        .review-summary .rating-bars .rb-row .rb-count { width: 24px; text-align: right; color: var(--gray-400); font-size: 0.7rem; }
+
+        .review-form {
+            background: var(--gray-50);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--gray-100);
+        }
+        .review-form h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .review-form .star-input {
+            display: flex;
+            gap: 0.2rem;
+            font-size: 1.6rem;
+            color: #CBD5E1;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+        }
+        .review-form .star-input i.active { color: #F59E0B; }
+        .review-form textarea {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 0.85rem;
+            min-height: 80px;
+            resize: vertical;
+            transition: var(--transition);
+        }
+        .review-form textarea:focus { outline: none; border-color: var(--primary-blue); }
+        .review-form .btn-primary { margin-top: 0.6rem; padding: 0.5rem 1.5rem; font-size: 0.85rem; }
+        .review-login-prompt {
+            background: var(--primary-blue-light);
+            border: 1px solid rgba(26,140,255,0.2);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--gray-600);
+            margin-bottom: 1rem;
+        }
+        .review-login-prompt a { color: var(--primary-blue); font-weight: 600; text-decoration: underline; }
+
+        .review-item {
+            padding: 0.8rem 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+        .review-item:last-child { border-bottom: none; }
+        .review-item .rev-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.3rem;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+        }
+        .review-item .rev-user {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .review-item .rev-avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: var(--primary-blue);
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+        .review-item .rev-user-info .rev-name { font-weight: 600; font-size: 0.85rem; }
+        .review-item .rev-user-info .rev-date { font-size: 0.7rem; color: var(--gray-400); }
+        .review-item .rev-stars { color: #F59E0B; font-size: 0.85rem; }
+        .review-item .rev-text { font-size: 0.85rem; color: var(--gray-600); line-height: 1.6; margin-top: 0.3rem; }
+
+        .no-reviews {
+            text-align: center;
+            padding: 1.5rem;
+            color: var(--gray-500);
+            font-size: 0.85rem;
+        }
+        .reviews-unavailable {
+            text-align: center;
+            padding: 1.5rem;
+            color: var(--gray-500);
+            font-size: 0.85rem;
+        }
+        .reviews-unavailable i { color: var(--gray-400); font-size: 1.5rem; display: block; margin-bottom: 0.4rem; }
+
+        .related-section { margin-top: 2rem; }
+        .related-section .related-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        .related-section .related-header h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .related-section .related-header h3 i { color: var(--primary-blue); }
+        .related-scroll {
+            display: flex;
+            gap: 0.8rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            scrollbar-width: thin;
+            -webkit-overflow-scrolling: touch;
+        }
+        .related-scroll::-webkit-scrollbar { height: 4px; }
+        .related-scroll .product-card {
+            flex: 0 0 200px;
+            min-width: 200px;
+            min-height: 300px;
+        }
+
+        .share-menu {
+            position: fixed;
+            background: var(--white);
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--gray-200);
+            padding: 0.4rem 0;
+            z-index: 1000;
+            display: none;
+            min-width: 180px;
+        }
+        .share-menu.show { display: block; }
+        .share-menu .share-item {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+        .share-menu .share-item:hover { background: var(--gray-50); color: var(--primary-blue); }
+        .share-menu .share-item i { width: 18px; text-align: center; color: var(--primary-blue); }
+
+        .toast-container { bottom: 80px; }
+
+        @media (min-width: 768px) {
+            .product-details-layout { grid-template-columns: 1fr 1fr; }
+            .product-gallery .main-image { height: 400px; }
+            .related-scroll .product-card { flex: 0 0 220px; min-width: 220px; }
+        }
+        @media (min-width: 1024px) {
+            .product-details-layout { grid-template-columns: 1fr 1.2fr; }
+            .product-gallery .main-image { height: 480px; }
+        }
+        @media (max-width: 480px) {
+            .product-info .product-name { font-size: 1.15rem; }
+            .product-info .product-price .current { font-size: 1.35rem; }
+            .product-info .product-actions { flex-direction: column; align-items: stretch; }
+            .product-info .product-actions .qty-control { align-self: flex-start; }
+            .product-info .product-actions .btn-primary,
+            .product-info .product-actions .btn-buy-now,
+            .product-info .product-actions .btn-wishlist,
+            .product-info .product-actions .btn-share { justify-content: center; }
+            .product-info .product-meta { grid-template-columns: 1fr; }
+            .product-gallery .thumbnails img { width: 50px; height: 50px; }
+            .related-scroll .product-card { flex: 0 0 160px; min-width: 160px; min-height: 260px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="sticky-header">
+        <div class="container">
+            <div class="header-top">
+                <div class="header-left">
+                    <button class="hamburger" id="menuToggle" aria-label="Open menu"><i class="fas fa-bars"></i></button>
+                </div>
+                <div class="header-center">
+                    <div class="brand-logo-placeholder">
+                        <img src="logo.png" alt="Sweet & Sour Logo" id="brandLogo" onerror="this.style.display='none'" />
+                    </div>
+                </div>
+                <div class="header-right">
+                    <a href="account.html" class="icon-wrap account-icon" id="profileIcon" aria-label="Profile">
+                        <div class="profile-avatar" id="profileAvatar">
+                            <div class="avatar-initial" id="avatarInitial">U</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <nav class="sidebar-drawer" id="sidebarDrawer">
+        <button class="sidebar-close" id="sidebarClose"><i class="fas fa-times"></i></button>
+        <div class="drawer-brand"><span class="brand-sweet">Sweet</span><span class="brand-and">&amp;</span><span class="brand-sour">Sour</span></div>
+        <ul class="drawer-nav">
+            <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="categories.html"><i class="fas fa-th-large"></i> Categories</a></li>
+            <li><a href="wishlist.html"><i class="far fa-heart"></i> Wishlist</a></li>
+            <li><a href="cart.html"><i class="fas fa-shopping-bag"></i> Cart</a></li>
+            <li><a href="account.html"><i class="far fa-user"></i> My Account</a></li>
+            <li><a href="orders.html"><i class="fas fa-shopping-bag"></i> Orders</a></li>
+            <li><a href="contact.html"><i class="fas fa-phone"></i> Contact</a></li>
+            <li id="adminNavItem" style="display:none;"><a href="admin.html"><i class="fas fa-shield-alt"></i> Admin</a></li>
+        </ul>
+    </nav>
+
+    <main class="container product-details-page">
+        <div id="productContainer">
+            <div style="display:flex;justify-content:center;padding:3rem 0;">
+                <div class="loading-spinner"></div>
+            </div>
+        </div>
+    </main>
+
+    <div class="toast-container" id="toast"></div>
+
+    <nav class="bottom-nav" id="bottomNav">
+        <a href="index.html" class="bottom-nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="categories.html" class="bottom-nav-item"><i class="fas fa-th-large"></i><span>Categories</span></a>
+        <a href="wishlist.html" class="bottom-nav-item"><i class="far fa-heart"></i><span>Wishlist</span><span class="badge-count" id="bottomWishlistBadge">0</span></a>
+        <a href="cart.html" class="bottom-nav-item"><i class="fas fa-shopping-bag"></i><span>Cart</span><span class="badge-count" id="bottomCartBadge">0</span></a>
+        <a href="account.html" class="bottom-nav-item"><i class="far fa-user"></i><span>Account</span></a>
+    </nav>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import {
+            auth, db,
+            onAuthStateChanged,
+            collection, doc, getDoc, setDoc, addDoc,
+            query, where, getDocs, onSnapshot, orderBy, Timestamp,
+            getApprovedReviews,
+            getProductUrl,
+            getBaseUrl
+        } from './firebase-config.js';
+
+        const container = document.getElementById('productContainer');
+        const toast = document.getElementById('toast');
+        const avatarInitial = document.getElementById('avatarInitial');
+        const profileIcon = document.getElementById('profileIcon');
+        const adminNavItem = document.getElementById('adminNavItem');
+
+        let toastTimer = null;
+        let currentUser = null;
+        let userData = null;
+        let currentProduct = null;
+        let reviewRating = 0;
+        let relatedUnsubscribe = null;
+
+        function getCart() {
+            try { return JSON.parse(localStorage.getItem('ss_cart_v1')) || []; } catch { return []; }
+        }
+        function saveCart(cart) { localStorage.setItem('ss_cart_v1', JSON.stringify(cart)); }
+        function getWishlist() {
+            try { return JSON.parse(localStorage.getItem('ss_wishlist_v1')) || []; } catch { return []; }
+        }
+        function saveWishlist(wishlist) { localStorage.setItem('ss_wishlist_v1', JSON.stringify(wishlist)); }
+
+        async function loadUserData(user) {
+            if (!user) {
+                userData = null;
+                currentUser = null;
+                updateProfileAvatar();
+                updateAdminMenu();
+                return;
+            }
+            currentUser = user;
+            try {
+                const docRef = doc(db, 'users', user.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    userData = docSnap.data();
+                } else {
+                    userData = { name: user.displayName || user.email?.split('@')[0] || 'User', role: 'customer' };
+                }
+            } catch (error) {
+                if (error.code === 'permission-denied') {
+                    console.warn('🔒 User doc read denied — treating as guest');
+                }
+                userData = { name: user.displayName || user.email?.split('@')[0] || 'User', role: 'customer' };
+            }
+            updateProfileAvatar();
+            updateAdminMenu();
+        }
+
+        function updateProfileAvatar() {
+            if (!currentUser) {
+                avatarInitial.textContent = 'U';
+                avatarInitial.className = 'avatar-initial';
+                profileIcon.href = 'login.html';
+                return;
+            }
+            profileIcon.href = 'account.html';
+            if (userData && userData.role === 'admin') {
+                avatarInitial.className = 'avatar-initial admin';
+                avatarInitial.textContent = 'A';
+            } else if (userData && userData.name) {
+                avatarInitial.className = 'avatar-initial';
+                avatarInitial.textContent = userData.name.charAt(0).toUpperCase();
+            } else if (currentUser.displayName) {
+                avatarInitial.className = 'avatar-initial';
+                avatarInitial.textContent = currentUser.displayName.charAt(0).toUpperCase();
+            } else if (currentUser.email) {
+                avatarInitial.className = 'avatar-initial';
+                avatarInitial.textContent = currentUser.email.charAt(0).toUpperCase();
+            } else {
+                avatarInitial.className = 'avatar-initial';
+                avatarInitial.textContent = 'U';
+            }
+        }
+
+        function updateAdminMenu() {
+            adminNavItem.style.display = (currentUser && userData && userData.role === 'admin') ? 'block' : 'none';
+        }
+
+        function showToast(message, type = 'success') {
+            toast.textContent = message;
+            toast.className = `toast-container ${type}`;
+            toast.style.display = 'block';
+            requestAnimationFrame(() => toast.classList.add('show'));
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.style.display = 'none', 400);
+            }, 3000);
+        }
+
+        function updateBadges() {
+            const wishlist = getWishlist();
+            const cart = getCart();
+            const wCount = wishlist.length;
+            const cCount = cart.reduce((sum, item) => sum + (item.qty || 1), 0);
+
+            const wishlistBadge = document.getElementById('wishlistBadge');
+            const cartBadge = document.getElementById('cartBadge');
+            const bottomWishlist = document.getElementById('bottomWishlistBadge');
+            const bottomCart = document.getElementById('bottomCartBadge');
+
+            if (wCount > 0) {
+                if (wishlistBadge) { wishlistBadge.textContent = wCount; wishlistBadge.style.display = 'block'; }
+                if (bottomWishlist) { bottomWishlist.textContent = wCount; bottomWishlist.style.display = 'block'; }
+            } else {
+                if (wishlistBadge) wishlistBadge.style.display = 'none';
+                if (bottomWishlist) bottomWishlist.style.display = 'none';
+            }
+
+            if (cCount > 0) {
+                if (cartBadge) { cartBadge.textContent = cCount; cartBadge.style.display = 'block'; }
+                if (bottomCart) { bottomCart.textContent = cCount; bottomCart.style.display = 'block'; }
+            } else {
+                if (cartBadge) cartBadge.style.display = 'none';
+                if (bottomCart) bottomCart.style.display = 'none';
+            }
+        }
+
+        function isInWishlist(productId) { return getWishlist().includes(productId); }
+
+        function renderStars(rating) {
+            const full = Math.floor(rating);
+            const half = rating % 1 >= 0.5 ? 1 : 0;
+            const empty = 5 - full - half;
+            return '★'.repeat(full) + (half ? '☆' : '') + '☆'.repeat(empty);
+        }
+
+        function renderReviewStars(rating) {
+            let s = '';
+            for (let i = 1; i <= 5; i++) {
+                s += i <= rating ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>';
+            }
+            return s;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function renderRelatedProducts(products, currentProductId) {
+            const relatedSection = document.getElementById('relatedSection');
+            if (!relatedSection) return;
+            if (!products || products.length === 0) {
+                relatedSection.style.display = 'none';
+                return;
+            }
+            relatedSection.style.display = 'block';
+
+            const scrollEl = document.getElementById('relatedScroll');
+            scrollEl.innerHTML = '';
+
+            products.forEach(product => {
+                const discount = product.oldPrice && product.oldPrice > product.price ?
+                    Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100) : 0;
+                const imageUrl = product.thumbnail || product.images?.[0]?.url || 'placeholder-product.jpg';
+                const inWishlist = isInWishlist(product.id);
+                const rating = product.rating || 0;
+
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.dataset.id = product.id;
+                card.innerHTML = `
+                    ${discount > 0 ? `<span class="discount-badge">${discount}% OFF</span>` : ''}
+                    <div class="card-top-actions">
+                        <button class="wishlist-btn ${inWishlist ? 'active' : ''}" data-id="${product.id}" aria-label="Wishlist">
+                            <i class="${inWishlist ? 'fas' : 'far'} fa-heart"></i>
+                        </button>
+                        <button class="cart-btn" data-id="${product.id}" aria-label="Add to Cart">
+                            <i class="fas fa-shopping-bag"></i>
+                        </button>
+                    </div>
+                    <div class="product-img">
+                        <img src="${imageUrl}" alt="${product.name}" loading="lazy" onerror="this.src='placeholder-product.jpg'" />
+                    </div>
+                    <div class="prod-name">${product.name}</div>
+                    <div class="prod-category">${product.categoryName || 'Product'}</div>
+                    <div class="prod-rating">${rating > 0 ? renderStars(rating) : '☆☆☆☆☆'}</div>
+                    <div>
+                        <span class="prod-price">₹${product.price}</span>
+                        ${product.oldPrice && product.oldPrice > product.price ? `<span class="prod-oldprice">₹${product.oldPrice}</span>` : ''}
+                    </div>
+                `;
+
+                card.addEventListener('click', function(e) {
+                    if (e.target.closest('button')) return;
+                    window.location.href = `product.html?id=${product.id}`;
+                });
+
+                const wishlistBtn = card.querySelector('.wishlist-btn');
+                wishlistBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const id = this.dataset.id;
+                    const wishlist = getWishlist();
+                    const idx = wishlist.indexOf(id);
+                    if (idx > -1) {
+                        wishlist.splice(idx, 1);
+                        this.classList.remove('active');
+                        this.innerHTML = '<i class="far fa-heart"></i>';
+                        showToast('Removed from wishlist', 'success');
+                    } else {
+                        wishlist.push(id);
+                        this.classList.add('active');
+                        this.innerHTML = '<i class="fas fa-heart"></i>';
+                        showToast('Added to wishlist', 'success');
+                    }
+                    saveWishlist(wishlist);
+                    updateBadges();
+                });
+
+                const cartBtn = card.querySelector('.cart-btn');
+                cartBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (!currentUser) { showToast('Please login to add items to cart', 'error'); return; }
+                    const cart = getCart();
+                    const existing = cart.find(i => i.id === product.id);
+                    if (existing) {
+                        existing.qty = (existing.qty || 1) + 1;
+                    } else {
+                        cart.push({
+                            id: product.id,
+                            qty: 1,
+                            price: product.price || 0,
+                            name: product.name || 'Product',
+                            image: product.thumbnail || '',
+                            oldPrice: product.oldPrice || 0,
+                            sku: product.sku || product.SKU || ''
+                        });
+                    }
+                    saveCart(cart);
+                    updateBadges();
+                    showToast('Added to cart!', 'success');
+                });
+
+                scrollEl.appendChild(card);
+            });
+        }
+
+        async function loadRelatedProducts(categoryId, currentProductId) {
+            const relatedSection = document.getElementById('relatedSection');
+            if (!relatedSection) return;
+            if (relatedUnsubscribe) { relatedUnsubscribe(); relatedUnsubscribe = null; }
+
+            try {
+                let q;
+                if (categoryId) {
+                    q = query(
+                        collection(db, 'products'),
+                        where('categoryId', '==', categoryId),
+                        where('isActive', '==', true)
+                    );
+                } else {
+                    q = query(collection(db, 'products'), where('isActive', '==', true));
+                }
+                relatedUnsubscribe = onSnapshot(q, (snapshot) => {
+                    const products = [];
+                    snapshot.forEach(docSnap => {
+                        if (docSnap.id === currentProductId) return;
+                        const data = docSnap.data();
+                        products.push({
+                            id: docSnap.id,
+                            ...data,
+                            thumbnail: data.thumbnail || data.images?.[0]?.url || '',
+                            oldPrice: data.oldPrice || data.salePrice || 0,
+                            categoryName: data.categoryName || data.category || '',
+                            sku: data.sku || data.SKU || data.productSku || data.productSKU || ''
+                        });
+                    });
+                    renderRelatedProducts(products.slice(0, 10), currentProductId);
+                }, (error) => {
+                    if (error.code === 'permission-denied') {
+                        console.warn('🔒 Related products: permission denied');
+                    } else if (error.code === 'failed-precondition') {
+                        console.warn('⚠️ Related products: index missing');
+                    } else {
+                        console.warn('⚠️ Related products error:', error.message);
+                    }
+                    relatedSection.style.display = 'none';
+                });
+            } catch (error) {
+                relatedSection.style.display = 'none';
+            }
+        }
+
+        async function renderProduct(product) {
+            if (!product) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-box-open"></i>
+                        <h3>Product not found</h3>
+                        <p>The product you're looking for doesn't exist or has been removed.</p>
+                        <a href="products.html" class="btn-primary">Browse Products</a>
+                    </div>
+                `;
+                return;
+            }
+
+            const discount = product.oldPrice && product.oldPrice > product.price ?
+                Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100) : 0;
+            const inWishlist = isInWishlist(product.id);
+            const images = product.images || [];
+            const mainImage = images.length > 0 ? images[0].url : (product.thumbnail || 'placeholder-product.jpg');
+            const flavours = product.flavours || [];
+            const sku = product.sku || product.SKU || product.productSku || product.productSKU || '';
+
+            let thumbnailsHtml = '';
+            if (images.length > 1) {
+                thumbnailsHtml = `<div class="thumbnails">`;
+                images.forEach((img, idx) => {
+                    thumbnailsHtml += `<img src="${img.url}" alt="${product.name} ${idx+1}" data-index="${idx}" class="${idx === 0 ? 'active' : ''}" />`;
+                });
+                thumbnailsHtml += `</div>`;
+            }
+
+            let flavoursHtml = '';
+            if (flavours.length > 0) {
+                flavoursHtml = `<div class="product-flavours">`;
+                flavours.forEach(f => { flavoursHtml += `<span class="flavour-tag">${f}</span>`; });
+                flavoursHtml += `</div>`;
+            }
+
+            container.innerHTML = `
+                <div class="breadcrumb">
+                    <a href="index.html">Home</a> /
+                    <a href="products.html">Products</a> /
+                    <span>${product.name}</span>
+                </div>
+                <div class="product-details-layout">
+                    <div class="product-gallery">
+                        <div class="main-image">
+                            <img src="${mainImage}" alt="${product.name}" id="mainProductImage" />
+                        </div>
+                        ${thumbnailsHtml}
+                    </div>
+                    <div class="product-info">
+                        <h1 class="product-name">${product.name}</h1>
+                        ${sku ? `<div class="product-sku">SKU: <span class="sku-value">${sku}</span></div>` : ''}
+                        <div class="product-rating" id="productRatingDisplay">
+                            <span class="loading-spinner" style="width:16px;height:16px;border-width:2px;"></span>
+                            <span class="review-count">Loading reviews...</span>
+                        </div>
+                        <div class="product-price">
+                            <span class="current">₹${product.price}</span>
+                            ${product.oldPrice && product.oldPrice > product.price ? `<span class="old">₹${product.oldPrice}</span>` : ''}
+                            ${discount > 0 ? `<span class="discount">${discount}% OFF</span>` : ''}
+                        </div>
+                        ${flavoursHtml}
+                        <div class="product-description">${product.description || 'No description available.'}</div>
+
+                        <div class="product-actions">
+                            <div class="qty-control">
+                                <button id="qtyMinus" aria-label="Decrease quantity"><i class="fas fa-minus"></i></button>
+                                <span id="qtyValue">1</span>
+                                <button id="qtyPlus" aria-label="Increase quantity"><i class="fas fa-plus"></i></button>
+                            </div>
+                            <button class="btn-primary" id="addToCartBtn"><i class="fas fa-shopping-bag"></i> Add to Cart</button>
+                            <button class="btn-buy-now" id="buyNowBtn"><i class="fas fa-bolt"></i> Buy Now</button>
+                            <button class="btn-wishlist ${inWishlist ? 'active' : ''}" id="wishlistBtn">
+                                <i class="${inWishlist ? 'fas' : 'far'} fa-heart"></i> ${inWishlist ? 'Remove' : 'Wishlist'}
+                            </button>
+                            <button class="btn-share" id="shareBtn"><i class="fas fa-share-alt"></i> Share</button>
+                        </div>
+
+                        <div class="product-meta">
+                            <span><strong>Category:</strong> ${product.categoryName || product.category || 'N/A'}</span>
+                            <span><strong>Brand:</strong> ${product.brand || 'N/A'}</span>
+                            ${sku ? `<span><strong>SKU:</strong> ${sku}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reviews-section" id="reviewsSection">
+                    <h3><i class="fas fa-star"></i> Customer Reviews</h3>
+                    <div id="reviewsContainer">
+                        <div style="text-align:center;padding:1rem;"><div class="loading-spinner" style="width:32px;height:32px;"></div></div>
+                    </div>
+                </div>
+
+                <div class="related-section" id="relatedSection" style="display:none;">
+                    <div class="related-header">
+                        <h3><i class="fas fa-th-large"></i> Related Products</h3>
+                    </div>
+                    <div class="related-scroll" id="relatedScroll"></div>
+                </div>
+            `;
+
+            const thumbnails = container.querySelectorAll('.thumbnails img');
+            const mainImageEl = document.getElementById('mainProductImage');
+            if (thumbnails.length > 0) {
+                thumbnails.forEach(thumb => {
+                    thumb.addEventListener('click', function() {
+                        thumbnails.forEach(t => t.classList.remove('active'));
+                        this.classList.add('active');
+                        if (mainImageEl) mainImageEl.src = this.getAttribute('src');
+                    });
+                });
+            }
+
+            let qty = 1;
+            const qtyValue = document.getElementById('qtyValue');
+            document.getElementById('qtyMinus').addEventListener('click', () => { if (qty > 1) { qty--; qtyValue.textContent = qty; } });
+            document.getElementById('qtyPlus').addEventListener('click', () => { qty++; qtyValue.textContent = qty; });
+
+            document.getElementById('addToCartBtn').addEventListener('click', function() {
+                if (!currentUser) { showToast('Please login to add items to cart', 'error'); return; }
+                const cart = getCart();
+                const existing = cart.find(item => item.id === product.id);
+                if (existing) {
+                    existing.qty = (existing.qty || 1) + qty;
+                } else {
+                    cart.push({
+                        id: product.id,
+                        qty: qty,
+                        price: product.price || 0,
+                        name: product.name || 'Product',
+                        image: product.thumbnail || product.images?.[0]?.url || '',
+                        oldPrice: product.oldPrice || 0,
+                        sku: sku
+                    });
+                }
+                saveCart(cart);
+                updateBadges();
+                showToast(`Added ${qty} item(s) to cart!`, 'success');
+            });
+
+            document.getElementById('buyNowBtn').addEventListener('click', function() {
+                if (!currentUser) {
+                    showToast('Please login to continue with Buy Now', 'error');
+                    setTimeout(() => { window.location.href = 'login.html?redirect=' + encodeURIComponent('product.html?id=' + product.id); }, 800);
+                    return;
+                }
+                const buyNowItem = {
+                    id: product.id,
+                    qty: qty,
+                    price: product.price || 0,
+                    name: product.name || 'Product',
+                    image: product.thumbnail || product.images?.[0]?.url || '',
+                    oldPrice: product.oldPrice || 0,
+                    sku: sku
+                };
+                sessionStorage.setItem('ss_buynow_v1', JSON.stringify([buyNowItem]));
+                window.location.href = 'checkout.html?buynow=1';
+            });
+
+            document.getElementById('wishlistBtn').addEventListener('click', function() {
+                const wishlist = getWishlist();
+                const idx = wishlist.indexOf(product.id);
+                if (idx > -1) {
+                    wishlist.splice(idx, 1);
+                    saveWishlist(wishlist);
+                    this.classList.remove('active');
+                    this.innerHTML = '<i class="far fa-heart"></i> Wishlist';
+                    showToast('Removed from wishlist', 'success');
+                } else {
+                    wishlist.push(product.id);
+                    saveWishlist(wishlist);
+                    this.classList.add('active');
+                    this.innerHTML = '<i class="fas fa-heart"></i> Remove';
+                    showToast('Added to wishlist', 'success');
+                }
+                updateBadges();
+            });
+
+            document.getElementById('shareBtn').addEventListener('click', async function(e) {
+                e.stopPropagation();
+                const productUrl = getProductUrl(product.id);
+                const productImageUrl = product.thumbnail || product.images?.[0]?.url || '';
+                const shareData = {
+                    title: product.name,
+                    text: product.description || `Check out ${product.name} on Sweet & Sour!`,
+                    url: productUrl
+                };
+
+                // Try Web Share API with files (product image) first
+                if (navigator.share) {
+                    try {
+                        // Check if file sharing is supported
+                        if (navigator.canShare && productImageUrl) {
+                            try {
+                                const response = await fetch(productImageUrl);
+                                const blob = await response.blob();
+                                const file = new File([blob], `${product.name.replace(/[^a-z0-9]/gi, '_')}.jpg`, { type: blob.type || 'image/jpeg' });
+                                if (navigator.canShare({ files: [file] })) {
+                                    await navigator.share({
+                                        ...shareData,
+                                        files: [file]
+                                    });
+                                    return;
+                                }
+                            } catch (fileError) {
+                                console.warn('File share not supported, falling back:', fileError);
+                            }
+                        }
+                        await navigator.share(shareData);
+                    } catch (err) {
+                        if (err.name !== 'AbortError') {
+                            showToast('Share cancelled', 'info');
+                        }
+                    }
+                } else {
+                    showShareMenu(this, productUrl, product.name, productImageUrl);
+                }
+            });
+
+            function showShareMenu(btn, url, name, imageUrl) {
+                const existing = document.querySelector('.share-menu');
+                if (existing) existing.remove();
+                const menu = document.createElement('div');
+                menu.className = 'share-menu show';
+                menu.innerHTML = `
+                    <div class="share-item" data-action="copy"><i class="fas fa-link"></i> Copy Link</div>
+                    <div class="share-item" data-action="whatsapp"><i class="fab fa-whatsapp"></i> Share on WhatsApp</div>
+                    <div class="share-item" data-action="facebook"><i class="fab fa-facebook"></i> Share on Facebook</div>
+                    <div class="share-item" data-action="twitter"><i class="fab fa-twitter"></i> Share on Twitter</div>
+                `;
+                document.body.appendChild(menu);
+                const rect = btn.getBoundingClientRect();
+                menu.style.position = 'fixed';
+                menu.style.top = Math.min(rect.bottom + 8, window.innerHeight - 200) + 'px';
+                menu.style.left = Math.min(rect.left, window.innerWidth - 200) + 'px';
+
+                menu.querySelectorAll('.share-item').forEach(item => {
+                    item.addEventListener('click', async function() {
+                        const action = this.dataset.action;
+                        if (action === 'copy') {
+                            try { await navigator.clipboard.writeText(url); showToast('Link copied!', 'success'); }
+                            catch { showToast('Could not copy link', 'error'); }
+                        } else if (action === 'whatsapp') {
+                            let text = name;
+                            if (imageUrl) text += `\n${imageUrl}`;
+                            text += `\n${url}`;
+                            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                        } else if (action === 'facebook') {
+                            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+                        } else if (action === 'twitter') {
+                            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(name)}&url=${encodeURIComponent(url)}`, '_blank');
+                        }
+                        menu.remove();
+                    });
+                });
+                setTimeout(() => {
+                    document.addEventListener('click', function closeMenu(ev) {
+                        if (!menu.contains(ev.target)) { menu.remove(); document.removeEventListener('click', closeMenu); }
+                    });
+                }, 100);
+            }
+
+            // Load reviews after product render
+            loadReviews(product.id);
+            loadRelatedProducts(product.categoryId, product.id);
+        }
+
+        async function loadReviews(productId) {
+            const reviewsContainer = document.getElementById('reviewsContainer');
+            const ratingDisplay = document.getElementById('productRatingDisplay');
+            if (!reviewsContainer) return;
+
+            // Use shared safe helper from firebase-config.js
+            const result = await getApprovedReviews(productId);
+
+            if (!result.success) {
+                reviewsContainer.innerHTML = `
+                    <div class="reviews-unavailable">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Reviews are temporarily unavailable.
+                    </div>
+                `;
+                if (ratingDisplay) {
+                    ratingDisplay.innerHTML = `<span class="review-count">Reviews unavailable</span>`;
+                }
+                return;
+            }
+
+            // Update product rating display with correct count
+            if (ratingDisplay) {
+                const avg = result.averageRating;
+                const count = result.totalCount;
+                if (count > 0) {
+                    ratingDisplay.innerHTML = `
+                        ${renderStars(avg)}
+                        <span class="review-count">${avg.toFixed(1)} (${count} review${count > 1 ? 's' : ''})</span>
+                    `;
+                } else {
+                    ratingDisplay.innerHTML = `
+                        <span class="review-count">No reviews</span>
+                    `;
+                }
+            }
+
+            renderReviews(result.reviews);
+        }
+
+        function renderReviews(reviews) {
+            const reviewsContainer = document.getElementById('reviewsContainer');
+            if (!reviewsContainer) return;
+
+            const total = reviews.length;
+            const sum = reviews.reduce((s, r) => s + (r.rating || 0), 0);
+            const avg = total > 0 ? (sum / total) : 0;
+
+            const dist = [0, 0, 0, 0, 0];
+            reviews.forEach(r => {
+                const idx = Math.min(5, Math.max(1, Math.round(r.rating || 0))) - 1;
+                dist[idx]++;
+            });
+
+            let summaryHtml = '';
+            if (total > 0) {
+                summaryHtml = `
+                    <div class="review-summary">
+                        <div class="avg-box">
+                            <div class="avg-num">${avg.toFixed(1)}</div>
+                            <div class="avg-stars">${renderReviewStars(Math.round(avg))}</div>
+                            <div class="avg-count">${total} review${total > 1 ? 's' : ''}</div>
+                        </div>
+                        <div class="rating-bars">
+                            ${[5,4,3,2,1].map(star => {
+                                const count = dist[star - 1];
+                                const pct = total > 0 ? (count / total) * 100 : 0;
+                                return `<div class="rb-row">
+                                    <span class="rb-label">${star} ★</span>
+                                    <span class="rb-bar"><span class="rb-fill" style="width:${pct}%"></span></span>
+                                    <span class="rb-count">${count}</span>
+                                </div>`;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            let formHtml = '';
+            if (currentUser) {
+                formHtml = `
+                    <div class="review-form" id="reviewForm">
+                        <h4>Write a Review</h4>
+                        <div class="star-input" id="starInput">
+                            <i class="far fa-star" data-rating="1"></i>
+                            <i class="far fa-star" data-rating="2"></i>
+                            <i class="far fa-star" data-rating="3"></i>
+                            <i class="far fa-star" data-rating="4"></i>
+                            <i class="far fa-star" data-rating="5"></i>
+                        </div>
+                        <textarea id="reviewText" placeholder="Share your thoughts about this product..."></textarea>
+                        <button class="btn-primary" id="submitReviewBtn"><i class="fas fa-paper-plane"></i> Submit Review</button>
+                    </div>
+                `;
+            } else {
+                formHtml = `
+                    <div class="review-login-prompt">
+                        <i class="fas fa-lock" style="color:var(--primary-blue);"></i>
+                        Please <a href="login.html">login</a> to write a review.
+                    </div>
+                `;
+            }
+
+            let reviewsHtml = '';
+            if (total === 0) {
+                reviewsHtml = `<div class="no-reviews"><i class="far fa-comment-dots" style="font-size:2rem;color:var(--gray-300);display:block;margin-bottom:0.5rem;"></i>No reviews yet. Be the first to review!</div>`;
+            } else {
+                reviewsHtml = reviews.map(r => {
+                    const name = r.userName || 'User';
+                    const initial = name.charAt(0).toUpperCase();
+                    const date = r.createdAt ? new Date(r.createdAt.toDate?.() || r.createdAt).toLocaleDateString() : '';
+                    return `
+                        <div class="review-item">
+                            <div class="rev-header">
+                                <div class="rev-user">
+                                    <div class="rev-avatar">${initial}</div>
+                                    <div class="rev-user-info">
+                                        <div class="rev-name">${escapeHtml(name)}</div>
+                                        <div class="rev-date">${date}</div>
+                                    </div>
+                                </div>
+                                <div class="rev-stars">${renderReviewStars(r.rating || 0)}</div>
+                            </div>
+                            <div class="rev-text">${escapeHtml(r.text || '')}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            reviewsContainer.innerHTML = summaryHtml + formHtml + reviewsHtml;
+
+            const starInput = document.getElementById('starInput');
+            if (starInput) {
+                const stars = starInput.querySelectorAll('i');
+                starInput.addEventListener('mouseover', function(e) {
+                    if (e.target.tagName === 'I') {
+                        const val = parseInt(e.target.dataset.rating);
+                        stars.forEach((s, i) => { s.classList.toggle('active', i < val); });
+                    }
+                });
+                starInput.addEventListener('mouseout', function() {
+                    stars.forEach((s, i) => { s.classList.toggle('active', i < reviewRating); });
+                });
+                starInput.addEventListener('click', function(e) {
+                    if (e.target.tagName === 'I') {
+                        reviewRating = parseInt(e.target.dataset.rating);
+                        stars.forEach((s, i) => { s.classList.toggle('active', i < reviewRating); });
+                    }
+                });
+            }
+
+            const submitBtn = document.getElementById('submitReviewBtn');
+            if (submitBtn) {
+                submitBtn.addEventListener('click', async function() {
+                    if (!currentUser) { showToast('Please login to submit a review', 'error'); return; }
+                    if (reviewRating < 1) { showToast('Please select a star rating', 'error'); return; }
+                    const text = document.getElementById('reviewText').value.trim();
+                    if (!text) { showToast('Please write your review', 'error'); return; }
+
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span class="spinner"></span><span class="btn-text">Submitting...</span>';
+                    try {
+                        await addDoc(collection(db, 'reviews'), {
+                            productId: currentProduct.id,
+                            productName: currentProduct.name || '',
+                            userId: currentUser.uid,
+                            userName: userData?.name || currentUser.displayName || currentUser.email?.split('@')[0] || 'User',
+                            userEmail: currentUser.email || '',
+                            rating: reviewRating,
+                            text: text,
+                            status: 'pending',
+                            createdAt: Timestamp.now(),
+                            updatedAt: Timestamp.now()
+                        });
+                        showToast('Review submitted! It will appear after admin approval.', 'success');
+                        document.getElementById('reviewText').value = '';
+                        reviewRating = 0;
+                        starInput.querySelectorAll('i').forEach(s => s.classList.remove('active'));
+                    } catch (error) {
+                        if (error.code === 'permission-denied') {
+                            showToast('You do not have permission to submit reviews.', 'error');
+                        } else {
+                            showToast('Failed to submit review. Please try again.', 'error');
+                        }
+                    } finally {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Review';
+                    }
+                });
+            }
+        }
+
+        async function loadProduct() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id');
+
+            if (!productId) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-box-open"></i>
+                        <h3>Product not found</h3>
+                        <p>No product ID specified.</p>
+                        <a href="products.html" class="btn-primary">Browse Products</a>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                container.innerHTML = `
+                    <div style="display:flex;justify-content:center;padding:3rem 0;">
+                        <div class="loading-spinner"></div>
+                    </div>
+                `;
+                const docRef = doc(db, 'products', productId);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    currentProduct = {
+                        id: docSnap.id,
+                        ...data,
+                        thumbnail: data.thumbnail || data.images?.[0]?.url || '',
+                        oldPrice: data.oldPrice || data.salePrice || 0,
+                        categoryName: data.categoryName || data.category || '',
+                        sku: data.sku || data.SKU || data.productSku || data.productSKU || ''
+                    };
+                    renderProduct(currentProduct);
+                } else {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-box-open"></i>
+                            <h3>Product not found</h3>
+                            <p>The product you're looking for doesn't exist or has been removed.</p>
+                            <a href="products.html" class="btn-primary">Browse Products</a>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                let message = 'Please try again later.';
+                if (error.code === 'permission-denied') message = 'You do not have permission to view this product.';
+                else if (error.code === 'unavailable') message = 'Network unavailable. Please check your connection.';
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle" style="color:var(--primary-blue);"></i>
+                        <h3>Error loading product</h3>
+                        <p>${message}</p>
+                        <a href="products.html" class="btn-primary">Browse Products</a>
+                    </div>
+                `;
+            }
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            await loadUserData(user);
+            loadProduct();
+            updateBadges();
+        });
+
+        window.addEventListener('storage', updateBadges);
+
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebarDrawer');
+        const overlay = document.getElementById('sidebarOverlay');
+        const closeBtn = document.getElementById('sidebarClose');
+
+        menuToggle.addEventListener('click', () => { sidebar.classList.add('open'); overlay.classList.add('open'); document.body.style.overflow = 'hidden'; });
+        closeBtn.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = ''; });
+        overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = ''; });
+    </script>
+</body>
+</html>

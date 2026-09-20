@@ -1,0 +1,124 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================================
+    // HELPER FUNCTIONS
+    // ============================================
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'active';
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isActiveResource() {
+      return resource.data.isActive == true;
+    }
+
+    // ============================================
+    // USERS
+    // - Owner can read/update own doc
+    // - Admin can read/update/delete all
+    // - Create allowed for own uid on signup
+    // ============================================
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ============================================
+    // PRODUCTS
+    // - Public can read active products
+    // - Admin full access
+    // ============================================
+    match /products/{productId} {
+      allow read: if isActiveResource() || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ============================================
+    // CATEGORIES
+    // - Public can read active categories
+    // - Admin full access
+    // ============================================
+    match /categories/{categoryId} {
+      allow read: if isActiveResource() || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ============================================
+    // SUBCATEGORIES
+    // - Public can read active subcategories
+    // - Admin full access
+    // ============================================
+    match /subcategories/{subcategoryId} {
+      allow read: if isActiveResource() || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ============================================
+    // BANNERS
+    // - Public can read active banners
+    // - Admin full access
+    // ============================================
+    match /banners/{bannerId} {
+      allow read: if isActiveResource() || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ============================================
+    // ANNOUNCEMENTS
+    // - Public can read active announcements
+    // - Admin full access
+    // ============================================
+    match /announcements/{announcementId} {
+      allow read: if isActiveResource() || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ============================================
+    // ORDERS
+    // - Customer can create own orders and read own orders
+    // - Admin can read/update/delete all orders
+    // ============================================
+    match /orders/{orderId} {
+      allow read: if isSignedIn() && (resource.data.customerId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && request.resource.data.customerId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    // ============================================
+    // REVIEWS
+    // - Public can read approved reviews
+    // - Signed-in user can create their own review (pending status)
+    // - User can read own reviews (any status)
+    // - Admin full access
+    // ============================================
+    match /reviews/{reviewId} {
+      allow read: if resource.data.status == 'approved'
+                  || (isSignedIn() && resource.data.userId == request.auth.uid)
+                  || isAdmin();
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+    }
+
+    // ============================================
+    // DEFAULT DENY
+    // ============================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

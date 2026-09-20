@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5" />
+    <title>Sweet & Sour · My Account</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        .account-page { padding: 1rem 0 2rem; }
+        .account-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid var(--gray-100);
+            box-shadow: var(--shadow-sm);
+        }
+        .account-header .avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--primary-blue);
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .account-header .avatar.admin { background: var(--accent-orange); }
+        .account-header .user-info h2 { font-size: 1.2rem; font-weight: 700; }
+        .account-header .user-info p { color: var(--gray-500); font-size: 0.85rem; }
+        .account-header .user-info .role-badge {
+            display: inline-block;
+            padding: 0.05rem 0.8rem;
+            border-radius: var(--radius-full);
+            font-size: 0.65rem;
+            font-weight: 600;
+            background: var(--primary-blue);
+            color: var(--white);
+        }
+        .account-header .user-info .role-badge.admin { background: var(--accent-orange); }
+        .account-header .user-info .status-badge {
+            display: inline-block;
+            padding: 0.05rem 0.6rem;
+            border-radius: var(--radius-full);
+            font-size: 0.6rem;
+            font-weight: 600;
+            margin-left: 0.3rem;
+        }
+        .status-badge.verified { background: #D1FAE5; color: #065F46; }
+        .status-badge.unverified { background: #FEF3C7; color: #92400E; }
+        .account-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+        .account-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            border: 1px solid var(--gray-100);
+            transition: var(--transition);
+            cursor: pointer;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+        }
+        .account-card:hover { border-color: var(--primary-blue); transform: translateY(-4px); box-shadow: var(--shadow); }
+        .account-card i { font-size: 1.8rem; color: var(--primary-blue); margin-bottom: 0.3rem; display: block; }
+        .account-card h4 { font-size: 0.85rem; font-weight: 600; }
+        .account-card p { font-size: 0.7rem; color: var(--gray-500); }
+        .logout-btn {
+            margin-top: 1.5rem;
+            width: 100%;
+            padding: 0.8rem;
+            background: #FEE2E2;
+            color: #991B1B;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+        }
+        .logout-btn:hover { background: #FECACA; }
+        .profile-edit-section {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            border: 1px solid var(--gray-100);
+            margin-top: 1rem;
+        }
+        .profile-edit-section h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.8rem; }
+        .profile-edit-section .form-group { margin-bottom: 0.6rem; }
+        .profile-edit-section .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.75rem;
+            margin-bottom: 0.15rem;
+            color: var(--dark-text);
+        }
+        .profile-edit-section .form-group input {
+            width: 100%;
+            padding: 0.5rem 0.8rem;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+        .profile-edit-section .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(26,140,255,0.08);
+        }
+        .profile-edit-section .form-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
+        .profile-edit-section .edit-toggle { margin-bottom: 0.5rem; }
+        .profile-edit-section .edit-toggle button {
+            padding: 0.3rem 1rem;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            font-size: 0.75rem;
+            background: var(--gray-100);
+            color: var(--gray-600);
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+        }
+        .profile-edit-section .edit-toggle button:hover { background: var(--gray-200); }
+        .profile-edit-section .edit-toggle button.active { background: var(--primary-blue); color: var(--white); }
+        .toast-container { bottom: 80px; }
+        @media (max-width: 480px) {
+            .account-grid { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+            .account-card { padding: 0.8rem 0.4rem; }
+            .account-card i { font-size: 1.4rem; }
+            .account-card h4 { font-size: 0.7rem; }
+            .account-header { padding: 1rem; }
+            .account-header .avatar { width: 50px; height: 50px; font-size: 1.2rem; }
+            .profile-edit-section .form-actions { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <header class="sticky-header">
+        <div class="container">
+            <div class="header-top">
+                <div class="header-left">
+                    <button class="hamburger" id="menuToggle" aria-label="Open menu"><i class="fas fa-bars"></i></button>
+                    <div class="brand-logo-placeholder"><img src="logo.png" alt="Sweet & Sour Logo" id="brandLogo" onerror="this.style.display='none'" /></div>
+                    <span class="brand-name"><span class="brand-sweet">Sweet</span><span class="brand-and">&amp;</span><span class="brand-sour">Sour</span></span>
+                </div>
+                <div class="header-center"></div>
+                <div class="header-right">
+                    <a href="wishlist.html" class="icon-wrap" aria-label="Wishlist"><i class="far fa-heart"></i><span class="badge-count" id="wishlistBadge">0</span></a>
+                    <a href="cart.html" class="icon-wrap" aria-label="Cart"><i class="fas fa-shopping-bag"></i><span class="badge-count" id="cartBadge">0</span></a>
+                    <a href="account.html" class="icon-wrap" id="profileIcon" aria-label="Profile"><div class="profile-avatar" id="profileAvatar"><div class="avatar-initial" id="avatarInitial">U</div></div></a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <nav class="sidebar-drawer" id="sidebarDrawer">
+        <button class="sidebar-close" id="sidebarClose"><i class="fas fa-times"></i></button>
+        <div class="drawer-brand"><span class="brand-sweet">Sweet</span><span class="brand-and">&amp;</span><span class="brand-sour">Sour</span></div>
+        <ul class="drawer-nav">
+            <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="categories.html"><i class="fas fa-th-large"></i> Categories</a></li>
+            <li><a href="wishlist.html"><i class="far fa-heart"></i> Wishlist</a></li>
+            <li><a href="cart.html"><i class="fas fa-shopping-bag"></i> Cart</a></li>
+            <li><a href="account.html"><i class="far fa-user"></i> My Account</a></li>
+            <li><a href="orders.html"><i class="fas fa-shopping-bag"></i> Orders</a></li>
+            <li><a href="contact.html"><i class="fas fa-phone"></i> Contact</a></li>
+            <li id="adminNavItem" style="display:none;"><a href="admin.html"><i class="fas fa-shield-alt"></i> Admin</a></li>
+        </ul>
+    </nav>
+
+    <main class="container account-page">
+        <div id="accountContainer">
+            <div style="display:flex;justify-content:center;padding:2rem 0;"><div class="loading-spinner"></div></div>
+        </div>
+    </main>
+
+    <div class="toast-container" id="toast"></div>
+
+    <nav class="bottom-nav" id="bottomNav">
+        <a href="index.html" class="bottom-nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="categories.html" class="bottom-nav-item"><i class="fas fa-th-large"></i><span>Categories</span></a>
+        <a href="wishlist.html" class="bottom-nav-item"><i class="far fa-heart"></i><span>Wishlist</span><span class="badge-count" id="bottomWishlistBadge">0</span></a>
+        <a href="cart.html" class="bottom-nav-item"><i class="fas fa-shopping-bag"></i><span>Cart</span><span class="badge-count" id="bottomCartBadge">0</span></a>
+        <a href="account.html" class="bottom-nav-item active"><i class="far fa-user"></i><span>Account</span></a>
+    </nav>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import {
+            auth, db,
+            onAuthStateChanged, signOut,
+            updateEmail, updatePassword,
+            sendEmailVerification,
+            doc, getDoc, updateDoc, Timestamp
+        } from './firebase-config.js';
+
+        const container = document.getElementById('accountContainer');
+        const toast = document.getElementById('toast');
+        const avatarInitial = document.getElementById('avatarInitial');
+        const profileIcon = document.getElementById('profileIcon');
+        const adminNavItem = document.getElementById('adminNavItem');
+
+        let toastTimer = null;
+        let currentUser = null;
+        let currentUserData = null;
+        let editMode = false;
+
+        function updateProfileAvatar() {
+            if (!currentUser) {
+                avatarInitial.textContent = 'U';
+                avatarInitial.className = 'avatar-initial';
+                profileIcon.href = 'login.html';
+                return;
+            }
+            profileIcon.href = 'account.html';
+            if (currentUserData && currentUserData.role === 'admin') {
+                avatarInitial.className = 'avatar-initial admin';
+                avatarInitial.textContent = 'A';
+            } else if (currentUserData && currentUserData.name) {
+                avatarInitial.className = 'avatar-initial';
+                avatarInitial.textContent = currentUserData.name.charAt(0).toUpperCase();
+            } else if (currentUser.email) {
+                avatarInitial.className = 'avatar-initial';
+                avatarInitial.textContent = currentUser.email.charAt(0).toUpperCase();
+            } else {
+                avatarInitial.className = 'avatar-initial';
+                avatarInitial.textContent = 'U';
+            }
+        }
+
+        function updateAdminMenu() {
+            adminNavItem.style.display = (currentUserData && currentUserData.role === 'admin') ? 'block' : 'none';
+        }
+
+        function getCartCount() {
+            try {
+                const cart = JSON.parse(localStorage.getItem('ss_cart_v1')) || [];
+                return cart.reduce((sum, item) => sum + (item.qty || 1), 0);
+            } catch { return 0; }
+        }
+        function getWishlistCount() {
+            try { return (JSON.parse(localStorage.getItem('ss_wishlist_v1')) || []).length; } catch { return 0; }
+        }
+
+        function updateBadges() {
+            const wishlistBadge = document.getElementById('wishlistBadge');
+            const cartBadge = document.getElementById('cartBadge');
+            const bottomWishlist = document.getElementById('bottomWishlistBadge');
+            const bottomCart = document.getElementById('bottomCartBadge');
+            const wCount = getWishlistCount();
+            const cCount = getCartCount();
+            if (wCount > 0) { wishlistBadge.textContent = wCount; wishlistBadge.style.display = 'block'; if (bottomWishlist) { bottomWishlist.textContent = wCount; bottomWishlist.style.display = 'block'; } }
+            else { wishlistBadge.style.display = 'none'; if (bottomWishlist) { bottomWishlist.style.display = 'none'; } }
+            if (cCount > 0) { cartBadge.textContent = cCount; cartBadge.style.display = 'block'; if (bottomCart) { bottomCart.textContent = cCount; bottomCart.style.display = 'block'; } }
+            else { cartBadge.style.display = 'none'; if (bottomCart) { bottomCart.style.display = 'none'; } }
+        }
+
+        function showToast(message, type = 'success') {
+            toast.textContent = message;
+            toast.className = `toast-container ${type}`;
+            toast.style.display = 'block';
+            requestAnimationFrame(() => toast.classList.add('show'));
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.style.display = 'none', 400); }, 3000);
+        }
+
+        function validatePhone(phone) {
+            const cleaned = phone.replace(/[\s\-\(\)]/g, '');
+            if (/^(\+91)?[6-9]\d{9}$/.test(cleaned)) return { valid: true, formatted: cleaned };
+            return { valid: false, formatted: phone };
+        }
+
+        function renderLoggedOut() {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-lock"></i>
+                    <h3>Please Login</h3>
+                    <p>Login to access your account.</p>
+                    <a href="login.html" class="btn-primary">Login</a>
+                </div>
+            `;
+            updateProfileAvatar();
+            updateAdminMenu();
+            updateBadges();
+        }
+
+        function renderAccount(userData) {
+            const data = userData || {};
+            const name = data.name || 'User';
+            const email = currentUser?.email || '';
+            const phone = data.phone || 'Not provided';
+            const role = data.role || 'customer';
+            const isAdmin = role === 'admin';
+            const profileComplete = data.profileComplete === true;
+            const emailVerified = currentUser?.emailVerified || false;
+            const createdAt = data.createdAt ? new Date(data.createdAt.toDate?.() || data.createdAt) : null;
+
+            const avatarClass = isAdmin ? 'avatar admin' : 'avatar';
+            const roleBadgeClass = isAdmin ? 'role-badge admin' : 'role-badge';
+            const statusClass = emailVerified ? 'status-badge verified' : 'status-badge unverified';
+            const statusText = emailVerified ? 'Verified' : 'Unverified';
+
+            container.innerHTML = `
+                <div class="account-header">
+                    <div class="${avatarClass}">${isAdmin ? 'A' : name.charAt(0).toUpperCase()}</div>
+                    <div class="user-info">
+                        <h2>${name} <span class="${roleBadgeClass}">${isAdmin ? 'Admin' : 'Customer'}</span>
+                            <span class="${statusClass}">${statusText}</span>
+                        </h2>
+                        <p>${email}</p>
+                        <p style="font-size:0.75rem;color:var(--gray-400);">
+                            <i class="fas fa-phone"></i> ${phone}
+                            ${!profileComplete ? ' · <span style="color:#F59E0B;"><i class="fas fa-exclamation-triangle"></i> Profile incomplete</span>' : ''}
+                        </p>
+                        ${createdAt ? `<p style="font-size:0.65rem;color:var(--gray-400);">Joined: ${createdAt.toLocaleDateString()}</p>` : ''}
+                    </div>
+                </div>
+
+                <div class="account-grid">
+                    <div class="account-card" onclick="window.location.href='orders.html'">
+                        <i class="fas fa-shopping-bag"></i><h4>My Orders</h4><p>View order history</p>
+                    </div>
+                    <div class="account-card" onclick="window.location.href='wishlist.html'">
+                        <i class="far fa-heart"></i><h4>Wishlist</h4><p>Your saved items</p>
+                    </div>
+                    <div class="account-card" onclick="window.location.href='cart.html'">
+                        <i class="fas fa-shopping-cart"></i><h4>Cart</h4><p>View your cart</p>
+                    </div>
+                    <div class="account-card" onclick="window.location.href='contact.html'">
+                        <i class="fas fa-headset"></i><h4>Support</h4><p>Get help</p>
+                    </div>
+                    ${isAdmin ? `
+                    <div class="account-card" onclick="window.location.href='admin.html'" style="grid-column:1/-1;background:#FFF8E1;border-color:#FFC107;">
+                        <i class="fas fa-shield-alt" style="color:#FF6F00;"></i>
+                        <h4>Admin Dashboard</h4>
+                        <p>Manage your store</p>
+                    </div>
+                    ` : ''}
+                </div>
+
+                <div class="profile-edit-section">
+                    <div class="edit-toggle">
+                        <button id="toggleEditBtn" class="${editMode ? 'active' : ''}">
+                            <i class="fas ${editMode ? 'fa-times' : 'fa-edit'}"></i>
+                            ${editMode ? 'Cancel Edit' : 'Edit Profile'}
+                        </button>
+                    </div>
+
+                    <div id="profileEditForm" style="${editMode ? 'display:block;' : 'display:none;'}">
+                        <h3>Edit Profile</h3>
+                        <form id="profileForm">
+                            <div class="form-group">
+                                <label for="editName">Full Name</label>
+                                <input type="text" id="editName" value="${name}" />
+                            </div>
+                            <div class="form-group">
+                                <label for="editEmail">Email Address</label>
+                                <input type="email" id="editEmail" value="${email}" />
+                                <span style="font-size:0.65rem;color:var(--gray-400);">
+                                    ${emailVerified ? '<i class="fas fa-check-circle" style="color:var(--accent);"></i> Verified' : '<i class="fas fa-exclamation-circle" style="color:#F59E0B;"></i> Not verified'}
+                                    <button type="button" id="verifyEmailBtn" style="font-size:0.6rem;color:var(--primary-blue);text-decoration:underline;background:none;border:none;cursor:pointer;">Send verification</button>
+                                </span>
+                            </div>
+                            <div class="form-group">
+                                <label for="editPhone">Phone Number</label>
+                                <input type="tel" id="editPhone" value="${phone !== 'Not provided' ? phone : ''}" placeholder="+91 9876543210" />
+                            </div>
+                            <div class="form-group">
+                                <label for="editPassword">New Password</label>
+                                <input type="password" id="editPassword" placeholder="Enter new password (leave blank to keep current)" />
+                            </div>
+                            <div class="form-group">
+                                <label for="editConfirmPassword">Confirm Password</label>
+                                <input type="password" id="editConfirmPassword" placeholder="Confirm new password" />
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn-primary" id="saveProfileBtn"><i class="fas fa-save"></i> Save Changes</button>
+                                <button type="button" class="btn-secondary" id="cancelEditBtn">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            `;
+
+            document.getElementById('toggleEditBtn').addEventListener('click', function() {
+                editMode = !editMode;
+                const form = document.getElementById('profileEditForm');
+                if (editMode) { form.style.display = 'block'; this.classList.add('active'); this.innerHTML = '<i class="fas fa-times"></i> Cancel Edit'; }
+                else { form.style.display = 'none'; this.classList.remove('active'); this.innerHTML = '<i class="fas fa-edit"></i> Edit Profile'; }
+            });
+
+            document.getElementById('cancelEditBtn').addEventListener('click', function() {
+                editMode = false;
+                document.getElementById('profileEditForm').style.display = 'none';
+                const toggleBtn = document.getElementById('toggleEditBtn');
+                toggleBtn.classList.remove('active');
+                toggleBtn.innerHTML = '<i class="fas fa-edit"></i> Edit Profile';
+            });
+
+            document.getElementById('verifyEmailBtn')?.addEventListener('click', async function() {
+                try {
+                    await sendEmailVerification(currentUser);
+                    showToast('Verification email sent! Please check your inbox.', 'success');
+                } catch (error) { showToast('Failed to send verification email: ' + error.message, 'error'); }
+            });
+
+            document.getElementById('profileForm').addEventListener('submit', async function(e) { e.preventDefault(); await handleProfileUpdate(); });
+
+            document.getElementById('logoutBtn').addEventListener('click', async () => {
+                try {
+                    await signOut(auth);
+                    showToast('Logged out successfully', 'success');
+                    setTimeout(() => { window.location.href = 'index.html'; }, 600);
+                } catch (error) { showToast('Error logging out', 'error'); }
+            });
+
+            updateProfileAvatar();
+            updateAdminMenu();
+            updateBadges();
+        }
+
+        async function handleProfileUpdate() {
+            const name = document.getElementById('editName').value.trim();
+            const email = document.getElementById('editEmail').value.trim();
+            const phone = document.getElementById('editPhone').value.trim();
+            const password = document.getElementById('editPassword').value;
+            const confirmPassword = document.getElementById('editConfirmPassword').value;
+
+            if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Please enter a valid email address', 'error'); return; }
+            if (phone) { const pv = validatePhone(phone); if (!pv.valid) { showToast('Please enter a valid phone number', 'error'); return; } }
+            if (password) {
+                if (password.length < 6) { showToast('Password must be at least 6 characters', 'error'); return; }
+                if (password !== confirmPassword) { showToast('Passwords do not match', 'error'); return; }
+            }
+
+            const saveBtn = document.getElementById('saveProfileBtn');
+            saveBtn.disabled = true;
+            saveBtn.classList.add('btn-loading');
+            saveBtn.innerHTML = '<span class="spinner"></span><span class="btn-text"><i class="fas fa-save"></i> Save Changes</span>';
+
+            try {
+                let firestoreUpdates = {};
+
+                if (email && email !== currentUser.email) {
+                    try { await updateEmail(currentUser, email); firestoreUpdates.email = email; showToast('Email updated successfully', 'success'); }
+                    catch (error) {
+                        let msg = 'Failed to update email. ';
+                        if (error.code === 'auth/requires-recent-login') msg += 'Please re-authenticate.';
+                        else if (error.code === 'auth/email-already-in-use') msg += 'This email is already in use.';
+                        else msg += error.message;
+                        showToast(msg, 'error'); saveBtn.disabled = false; saveBtn.classList.remove('btn-loading'); saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes'; return;
+                    }
+                }
+
+                if (name && name !== currentUserData?.name) {
+                    firestoreUpdates.name = name;
+                    const nameParts = name.split(' ');
+                    firestoreUpdates.firstName = nameParts[0] || '';
+                    firestoreUpdates.lastName = nameParts.slice(1).join(' ') || '';
+                }
+
+                if (password) {
+                    try { await updatePassword(currentUser, password); showToast('Password updated successfully', 'success'); }
+                    catch (error) {
+                        let msg = 'Failed to update password. ';
+                        if (error.code === 'auth/requires-recent-login') msg += 'Please re-authenticate.';
+                        else if (error.code === 'auth/weak-password') msg += 'Password is too weak.';
+                        else msg += error.message;
+                        showToast(msg, 'error'); saveBtn.disabled = false; saveBtn.classList.remove('btn-loading'); saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Changes'; return;
+                    }
+                }
+
+                if (phone) { const pv = validatePhone(phone); firestoreUpdates.phone = pv.formatted; }
+                else { firestoreUpdates.phone = ''; }
+
+                firestoreUpdates.updatedAt = Timestamp.now();
+
+                if (Object.keys(firestoreUpdates).length > 0) {
+                    const docRef = doc(db, 'users', currentUser.uid);
+                    await updateDoc(docRef, firestoreUpdates);
+                    currentUserData = { ...currentUserData, ...firestoreUpdates };
+                }
+
+                showToast('Profile updated successfully!', 'success');
+                renderAccount(currentUserData);
+            } catch (error) {
+                showToast('Failed to update profile: ' + (error.message || 'Unknown error'), 'error');
+            } finally {
+                const btn = document.getElementById('saveProfileBtn');
+                if (btn) { btn.disabled = false; btn.classList.remove('btn-loading'); btn.innerHTML = '<i class="fas fa-save"></i> Save Changes'; }
+            }
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            currentUser = user;
+            if (!user) { currentUserData = null; renderLoggedOut(); return; }
+            try {
+                const docRef = doc(db, 'users', user.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) { currentUserData = docSnap.data(); }
+                else { currentUserData = { name: user.displayName || user.email?.split('@')[0] || 'User', role: 'customer', profileComplete: false }; }
+                renderAccount(currentUserData);
+            } catch (error) {
+                currentUserData = { name: user.displayName || user.email?.split('@')[0] || 'User', role: 'customer', profileComplete: false };
+                renderAccount(currentUserData);
+            }
+        });
+
+        window.addEventListener('storage', updateBadges);
+
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebarDrawer');
+        const overlay = document.getElementById('sidebarOverlay');
+        const closeBtn = document.getElementById('sidebarClose');
+        menuToggle.addEventListener('click', () => { sidebar.classList.add('open'); overlay.classList.add('open'); document.body.style.overflow = 'hidden'; });
+        closeBtn.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = ''; });
+        overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = ''; });
+    </script>
+</body>
+</html>

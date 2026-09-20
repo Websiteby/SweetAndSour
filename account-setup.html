@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5" />
+    <title>Sweet & Sour · Complete Your Account</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        .setup-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; background: var(--gray-50); }
+        .setup-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 2rem 1.5rem;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--gray-100);
+        }
+        .setup-card .brand { text-align: center; margin-bottom: 1.5rem; }
+        .setup-card .brand .logo { height: 50px; margin-bottom: 0.5rem; }
+        .setup-card .brand h2 { font-size: 1.5rem; font-weight: 800; color: var(--dark-text); }
+        .setup-card .brand h2 span { color: var(--primary-blue); }
+        .setup-card .brand p { color: var(--gray-500); font-size: 0.9rem; }
+        .setup-card .brand .subtitle { color: var(--gray-400); font-size: 0.8rem; margin-top: 0.2rem; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+        .setup-btn {
+            width: 100%;
+            padding: 0.7rem;
+            background: var(--primary-blue);
+            color: var(--white);
+            border-radius: var(--radius-full);
+            font-weight: 700;
+            font-size: 1rem;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .setup-btn:hover { background: var(--primary-blue-dark); transform: translateY(-2px); box-shadow: var(--shadow-blue); }
+        .setup-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .setup-footer { text-align: center; margin-top: 1.2rem; font-size: 0.85rem; color: var(--gray-500); }
+        .setup-footer a { color: var(--primary-blue); font-weight: 600; }
+        .skip-link { text-align: center; margin-top: 0.8rem; }
+        .skip-link a { color: var(--gray-400); font-size: 0.8rem; text-decoration: underline; }
+        .skip-link a:hover { color: var(--primary-blue); }
+        .toast-container { bottom: 24px; }
+        @media (max-width: 480px) { .form-row { grid-template-columns: 1fr; } .setup-card { padding: 1.5rem 1rem; } }
+    </style>
+</head>
+<body>
+    <div class="setup-page">
+        <div class="setup-card">
+            <div class="brand">
+                <img src="logo.png" alt="Sweet & Sour" class="logo" onerror="this.style.display='none'" />
+                <h2>Sweet <span>&amp;</span> Sour</h2>
+                <p>Complete Your Account</p>
+                <p class="subtitle">Please set up your profile to continue</p>
+            </div>
+
+            <div id="setupContainer">
+                <div style="text-align:center;padding:1rem 0;">
+                    <div class="loading-spinner"></div>
+                    <p style="color:var(--gray-500);font-size:0.85rem;margin-top:0.5rem;">Loading your profile...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toast"></div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import { initializeApp } from 'firebase/app';
+        import { getAuth, onAuthStateChanged, updateEmail, updatePassword } from 'firebase/auth';
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, Timestamp } from 'firebase/firestore';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAfGWLLJ-bmMrbkhLkdwhxIo2QrW7mYKQA",
+            authDomain: "sweet-and-sour-aa364.firebaseapp.com",
+            projectId: "sweet-and-sour-aa364",
+            storageBucket: "sweet-and-sour-aa364.firebasestorage.app",
+            messagingSenderId: "1046434031562",
+            appId: "1:1046434031562:web:b325998964afbfe4105133"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const container = document.getElementById('setupContainer');
+        const toast = document.getElementById('toast');
+        let toastTimer = null;
+        let currentUser = null;
+        let userData = null;
+        let isSubmitting = false;
+
+        function showToast(message, type = 'error') {
+            toast.textContent = message;
+            toast.className = `toast-container ${type}`;
+            toast.style.display = 'block';
+            requestAnimationFrame(() => toast.classList.add('show'));
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.style.display = 'none', 400); }, 3000);
+        }
+
+        function validatePhone(phone) {
+            const cleaned = phone.replace(/[\s\-\(\)]/g, '');
+            if (/^(\+91)?[6-9]\d{9}$/.test(cleaned)) return { valid: true, formatted: cleaned };
+            return { valid: false, formatted: phone };
+        }
+
+        function validateEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); }
+
+        function checkPasswordStrength(password) {
+            let score = 0;
+            if (password.length >= 6) score++;
+            if (password.length >= 10) score++;
+            if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score++;
+            if (/[0-9]/.test(password) || /[^A-Za-z0-9]/.test(password)) score++;
+            return score;
+        }
+
+        function renderSetupForm() {
+            const email = currentUser?.email || userData?.email || '';
+            const phone = userData?.phone || '';
+            const name = userData?.name || currentUser?.displayName || '';
+
+            container.innerHTML = `
+                <form id="setupForm" novalidate>
+                    <div class="form-group">
+                        <label for="setupEmail">Email Address</label>
+                        <input type="email" id="setupEmail" value="${email}" placeholder="your@email.com" required />
+                        <div class="input-hint">You can update your email here</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="setupPhone">Phone Number</label>
+                        <input type="tel" id="setupPhone" value="${phone}" placeholder="+91 9876543210" />
+                        <div class="input-hint">Include country code (e.g., +91 for India)</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="setupPassword">New Password</label>
+                        <input type="password" id="setupPassword" placeholder="Enter new password (optional)" />
+                        <div class="password-strength" id="pwStrength">
+                            <span class="bar" id="pwBar1"></span><span class="bar" id="pwBar2"></span>
+                            <span class="bar" id="pwBar3"></span><span class="bar" id="pwBar4"></span>
+                        </div>
+                        <div class="password-hint" id="pwHint">Leave blank to keep current password</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="setupConfirmPassword">Confirm Password</label>
+                        <input type="password" id="setupConfirmPassword" placeholder="Confirm new password" />
+                    </div>
+                    <button type="submit" class="setup-btn" id="setupSubmitBtn">
+                        <span class="spinner"></span>
+                        <span class="btn-text"><i class="fas fa-check"></i> Complete Setup</span>
+                    </button>
+                </form>
+                <div class="skip-link"><a href="index.html" id="skipSetup">Skip for now</a></div>
+            `;
+
+            const pwInput = document.getElementById('setupPassword');
+            const pwHint = document.getElementById('pwHint');
+
+            pwInput.addEventListener('input', function() {
+                const password = this.value;
+                const score = checkPasswordStrength(password);
+                const bars = document.querySelectorAll('#pwStrength .bar');
+                bars.forEach((bar, index) => {
+                    bar.className = 'bar';
+                    if (index < score) {
+                        if (score <= 1) bar.classList.add('weak');
+                        else if (score <= 2) bar.classList.add('medium');
+                        else bar.classList.add('strong');
+                    }
+                });
+                if (password.length === 0) { pwHint.textContent = 'Leave blank to keep current password'; pwHint.style.color = 'var(--gray-400)'; }
+                else if (score <= 1) { pwHint.textContent = 'Weak password - add more characters'; pwHint.style.color = '#D32F2F'; }
+                else if (score <= 2) { pwHint.textContent = 'Medium password - add uppercase and numbers'; pwHint.style.color = '#F59E0B'; }
+                else { pwHint.textContent = 'Strong password!'; pwHint.style.color = 'var(--accent)'; }
+            });
+
+            const confirmInput = document.getElementById('setupConfirmPassword');
+            confirmInput.addEventListener('input', function() {
+                if (this.value.length > 0 && this.value !== pwInput.value) this.style.borderColor = '#D32F2F';
+                else if (this.value.length > 0) this.style.borderColor = 'var(--accent)';
+                else this.style.borderColor = 'var(--gray-200)';
+            });
+
+            document.getElementById('skipSetup').addEventListener('click', function(e) {
+                e.preventDefault();
+                completeSetup(false);
+            });
+
+            document.getElementById('setupForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                if (isSubmitting) return;
+                await handleSubmit();
+            });
+        }
+
+        async function handleSubmit() {
+            const email = document.getElementById('setupEmail').value.trim();
+            const phone = document.getElementById('setupPhone').value.trim();
+            const password = document.getElementById('setupPassword').value;
+            const confirmPassword = document.getElementById('setupConfirmPassword').value;
+
+            if (!validateEmail(email)) { showToast('Please enter a valid email address', 'error'); return; }
+            if (phone) { const pv = validatePhone(phone); if (!pv.valid) { showToast('Please enter a valid phone number', 'error'); return; } }
+            if (password) {
+                if (password.length < 6) { showToast('Password must be at least 6 characters', 'error'); return; }
+                if (password !== confirmPassword) { showToast('Passwords do not match', 'error'); return; }
+            }
+
+            isSubmitting = true;
+            const btn = document.getElementById('setupSubmitBtn');
+            btn.classList.add('btn-loading');
+            btn.disabled = true;
+
+            try {
+                let firestoreUpdates = {};
+
+                if (email !== currentUser.email) {
+                    try { await updateEmail(currentUser, email); firestoreUpdates.email = email; showToast('Email updated', 'success'); }
+                    catch (error) {
+                        let msg = 'Failed to update email. ';
+                        if (error.code === 'auth/requires-recent-login') msg += 'Please re-authenticate.';
+                        else if (error.code === 'auth/email-already-in-use') msg += 'This email is already in use.';
+                        else msg += error.message;
+                        showToast(msg, 'error');
+                        btn.classList.remove('btn-loading'); btn.disabled = false; isSubmitting = false; return;
+                    }
+                }
+
+                if (password) {
+                    try { await updatePassword(currentUser, password); showToast('Password updated', 'success'); }
+                    catch (error) {
+                        let msg = 'Failed to update password. ';
+                        if (error.code === 'auth/requires-recent-login') msg += 'Please re-authenticate.';
+                        else if (error.code === 'auth/weak-password') msg += 'Password is too weak.';
+                        else msg += error.message;
+                        showToast(msg, 'error');
+                        btn.classList.remove('btn-loading'); btn.disabled = false; isSubmitting = false; return;
+                    }
+                }
+
+                if (phone) { const pv = validatePhone(phone); firestoreUpdates.phone = pv.formatted; }
+                else { firestoreUpdates.phone = ''; }
+
+                firestoreUpdates.profileComplete = true;
+                firestoreUpdates.updatedAt = Timestamp.now();
+
+                const docRef = doc(db, 'users', currentUser.uid);
+                await updateDoc(docRef, firestoreUpdates);
+
+                showToast('Profile completed successfully!', 'success');
+                btn.classList.remove('btn-loading'); btn.disabled = false; isSubmitting = false;
+
+                setTimeout(() => { window.location.href = 'index.html'; }, 800);
+            } catch (error) {
+                showToast('Failed to complete setup: ' + (error.message || 'Unknown error'), 'error');
+                btn.classList.remove('btn-loading'); btn.disabled = false; isSubmitting = false;
+            }
+        }
+
+        async function completeSetup(skip = false) {
+            if (!currentUser) { window.location.href = 'login.html'; return; }
+            try {
+                const docRef = doc(db, 'users', currentUser.uid);
+                await updateDoc(docRef, { profileComplete: true, updatedAt: Timestamp.now() });
+                window.location.href = 'index.html';
+            } catch (error) { window.location.href = 'index.html'; }
+        }
+
+        async function loadUserData(user) {
+            if (!user) { window.location.href = 'login.html'; return; }
+            currentUser = user;
+            try {
+                const docRef = doc(db, 'users', user.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    userData = docSnap.data();
+                    if (userData.profileComplete === true) { window.location.href = 'index.html'; return; }
+                } else {
+                    const newUserData = {
+                        uid: user.uid, email: user.email,
+                        name: user.displayName || user.email?.split('@')[0] || 'User',
+                        phone: '', role: 'customer', status: 'active',
+                        profileComplete: false,
+                        createdAt: Timestamp.now(), updatedAt: Timestamp.now()
+                    };
+                    await setDoc(docRef, newUserData);
+                    userData = newUserData;
+                }
+                renderSetupForm();
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                renderSetupForm();
+            }
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'login.html'; return; }
+            await loadUserData(user);
+        });
+    </script>
+</body>
+</html>

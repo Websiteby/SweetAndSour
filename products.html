@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5" />
+    <title>Sweet & Sour · Products</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        .products-page { padding: 1rem 0 2rem; }
+        .breadcrumb { font-size: 0.8rem; color: var(--gray-500); margin-bottom: 0.8rem; }
+        .breadcrumb a { color: var(--primary-blue); }
+        .breadcrumb a:hover { text-decoration: underline; }
+        .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem; }
+        .page-header h1 { font-size: 1.4rem; font-weight: 700; }
+        .page-header h1 i { color: var(--primary-blue); }
+        .page-header .results-count { font-size: 0.85rem; color: var(--gray-500); }
+        .filter-bar { display: flex; gap: 0.6rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
+        .filter-bar select { padding: 0.4rem 0.8rem; border: 2px solid var(--gray-200); border-radius: var(--radius-full); font-family: inherit; font-size: 0.85rem; background: var(--white); transition: var(--transition); cursor: pointer; max-width: 100%; }
+        .filter-bar select:focus { outline: none; border-color: var(--primary-blue); }
+        .filter-bar .filter-label { font-size: 0.8rem; font-weight: 600; color: var(--gray-500); }
+        .product-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
+        .load-more-container { text-align: center; margin-top: 1rem; }
+        .load-more-btn { background: var(--gray-100); color: var(--dark-text); padding: 0.5rem 2rem; border-radius: var(--radius-full); font-weight: 600; border: 1px solid var(--gray-200); transition: var(--transition); }
+        .load-more-btn:hover { background: var(--primary-blue); color: var(--white); border-color: var(--primary-blue); transform: translateY(-2px); }
+        .empty-products { text-align: center; padding: 3rem 1rem; grid-column: 1 / -1; }
+        .empty-products i { font-size: 4rem; color: var(--gray-300); margin-bottom: 1rem; }
+        .empty-products h3 { font-size: 1.2rem; font-weight: 700; }
+        .empty-products p { color: var(--gray-500); margin-bottom: 1.2rem; }
+        .active-filter-chip { display: inline-flex; align-items: center; gap: 0.4rem; background: var(--primary-blue-light); color: var(--primary-blue); padding: 0.2rem 0.8rem; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 600; margin-bottom: 0.8rem; }
+        .active-filter-chip button { background: transparent; border: none; color: var(--primary-blue); cursor: pointer; font-size: 0.85rem; padding: 0; }
+        .toast-container { bottom: 80px; }
+        @media (min-width: 640px) { .product-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 1024px) { .product-grid { grid-template-columns: repeat(4, 1fr); } }
+        @media (max-width: 480px) {
+            .product-card .product-img { height: 100px; }
+            .prod-name { font-size: 0.75rem; }
+            .prod-price { font-size: 0.85rem; }
+        }
+    </style>
+</head>
+<body>
+    <header class="sticky-header">
+        <div class="container">
+            <div class="header-top">
+                <div class="header-left">
+                    <button class="hamburger" id="menuToggle" aria-label="Open menu">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+                <div class="header-center">
+                    <div class="brand-logo-placeholder">
+                        <img src="logo.png" alt="Sweet & Sour Logo" id="brandLogo" onerror="this.style.display='none'" />
+                    </div>
+                </div>
+                <div class="header-right">
+                    <a href="account.html" class="icon-wrap account-icon" id="profileIcon" aria-label="Profile">
+                        <div class="profile-avatar" id="profileAvatar">
+                            <div class="avatar-initial" id="avatarInitial">U</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="search-bar-mobile">
+                <div class="search-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInputMobile" placeholder="Search products, categories or SKU..." autocomplete="off" aria-label="Search products" />
+                    <button class="search-btn" id="searchBtnMobile" aria-label="Search"><i class="fas fa-arrow-right"></i></button>
+                    <div class="search-suggestions" id="searchSuggestionsMobile"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <nav class="sidebar-drawer" id="sidebarDrawer">
+        <button class="sidebar-close" id="sidebarClose"><i class="fas fa-times"></i></button>
+        <div class="drawer-brand">
+            <span class="brand-sweet">Sweet</span>
+            <span class="brand-and">&amp;</span>
+            <span class="brand-sour">Sour</span>
+        </div>
+        <ul class="drawer-nav">
+            <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="categories.html"><i class="fas fa-th-large"></i> Categories</a></li>
+            <li><a href="wishlist.html"><i class="far fa-heart"></i> Wishlist</a></li>
+            <li><a href="cart.html"><i class="fas fa-shopping-bag"></i> Cart</a></li>
+            <li><a href="account.html"><i class="far fa-user"></i> My Account</a></li>
+            <li><a href="orders.html"><i class="fas fa-shopping-bag"></i> Orders</a></li>
+            <li><a href="contact.html"><i class="fas fa-phone"></i> Contact</a></li>
+            <li id="adminNavItem" style="display:none;"><a href="admin.html"><i class="fas fa-shield-alt"></i> Admin</a></li>
+        </ul>
+    </nav>
+
+    <main class="container products-page">
+        <div class="breadcrumb">
+            <a href="index.html">Home</a> / <span id="breadcrumbCurrent">Products</span>
+        </div>
+        <div class="page-header">
+            <h1><i class="fas fa-box"></i> <span id="pageTitle">Products</span></h1>
+            <span class="results-count" id="resultsCount">Loading...</span>
+        </div>
+
+        <div id="activeFilterChip"></div>
+
+        <div class="filter-bar">
+            <span class="filter-label">Sort:</span>
+            <select id="sortSelect">
+                <option value="newest">Newest First</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="popular">Most Popular</option>
+            </select>
+        </div>
+
+        <div id="productsContainer">
+            <div class="skeleton-grid">
+                <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
+                <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
+                <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
+                <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
+            </div>
+        </div>
+        <div class="load-more-container">
+            <button class="load-more-btn" id="loadMoreBtn">Load More</button>
+        </div>
+    </main>
+
+    <div class="toast-container" id="toast"></div>
+
+    <nav class="bottom-nav" id="bottomNav">
+        <a href="index.html" class="bottom-nav-item">
+            <i class="fas fa-home"></i><span>Home</span>
+        </a>
+        <a href="categories.html" class="bottom-nav-item">
+            <i class="fas fa-th-large"></i><span>Categories</span>
+        </a>
+        <a href="wishlist.html" class="bottom-nav-item">
+            <i class="far fa-heart"></i><span>Wishlist</span>
+            <span class="badge-count" id="bottomWishlistBadge">0</span>
+        </a>
+        <a href="cart.html" class="bottom-nav-item">
+            <i class="fas fa-shopping-bag"></i><span>Cart</span>
+            <span class="badge-count" id="bottomCartBadge">0</span>
+        </a>
+        <a href="account.html" class="bottom-nav-item">
+            <i class="far fa-user"></i><span>Account</span>
+        </a>
+    </nav>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import {
+            auth, db,
+            onAuthStateChanged,
+            doc, getDoc, setDoc,
+            isPermissionError,
+            searchProducts
+        } from './firebase-config.js';
+        import {
+            listenToActiveProducts,
+            listenToActiveCategories,
+            fetchActiveProducts
+        } from './firebase-data.js';
+
+        const container = document.getElementById('productsContainer');
+        const loadMoreBtn = document.getElementById('loadMoreBtn');
+        const toast = document.getElementById('toast');
+        const resultsCount = document.getElementById('resultsCount');
+        const pageTitle = document.getElementById('pageTitle');
+        const breadcrumbCurrent = document.getElementById('breadcrumbCurrent');
+        const activeFilterChip = document.getElementById('activeFilterChip');
+        const avatarInitial = document.getElementById('avatarInitial');
+        const profileIcon = document.getElementById('profileIcon');
+        const adminNavItem = document.getElementById('adminNavItem');
+
+        let toastTimer = null;
+        let currentUser = null;
+        let userData = null;
+        let allProducts = [];
+        let allCategories = [];
+        let currentPage = 0;
+        const productsPerPage = 12;
+        let unsubscribeProducts = null;
+        let unsubscribeCategories = null;
+        let filterCategoryId = null;
+        let filterCategoryName = '';
+        let productsError = null;
+
+        function getCart() { try { return JSON.parse(localStorage.getItem('ss_cart_v1')) || []; } catch { return []; } }
+        function saveCart(cart) { localStorage.setItem('ss_cart_v1', JSON.stringify(cart)); }
+        function getWishlist() { try { return JSON.parse(localStorage.getItem('ss_wishlist_v1')) || []; } catch { return []; } }
+        function saveWishlist(wishlist) { localStorage.setItem('ss_wishlist_v1', JSON.stringify(wishlist)); }
+
+        async function loadUserData(user) {
+            if (!user) { userData = null; currentUser = null; updateProfileAvatar(); updateAdminMenu(); return; }
+            currentUser = user;
+            try {
+                const docRef = doc(db, 'users', user.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) { userData = docSnap.data(); }
+                else { userData = { name: user.displayName || user.email?.split('@')[0] || 'User', role: 'customer' }; }
+            } catch (error) {
+                if (isPermissionError(error)) console.warn('🔒 User doc read denied');
+                userData = { name: user.displayName || user.email?.split('@')[0] || 'User', role: 'customer' };
+            }
+            updateProfileAvatar();
+            updateAdminMenu();
+        }
+
+        function updateProfileAvatar() {
+            if (!currentUser) { avatarInitial.textContent = 'U'; avatarInitial.className = 'avatar-initial'; profileIcon.href = 'login.html'; return; }
+            profileIcon.href = 'account.html';
+            if (userData && userData.role === 'admin') { avatarInitial.className = 'avatar-initial admin'; avatarInitial.textContent = 'A'; }
+            else if (userData && userData.name) { avatarInitial.className = 'avatar-initial'; avatarInitial.textContent = userData.name.charAt(0).toUpperCase(); }
+            else if (currentUser.email) { avatarInitial.className = 'avatar-initial'; avatarInitial.textContent = currentUser.email.charAt(0).toUpperCase(); }
+        }
+
+        function updateAdminMenu() { adminNavItem.style.display = (currentUser && userData && userData.role === 'admin') ? 'block' : 'none'; }
+
+        function showToast(message, type = 'success') {
+            toast.textContent = message;
+            toast.className = `toast-container ${type}`;
+            toast.style.display = 'block';
+            requestAnimationFrame(() => toast.classList.add('show'));
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.style.display = 'none', 400); }, 3000);
+        }
+
+        function updateBadges() {
+            const wCount = getWishlist().length;
+            const cCount = getCart().reduce((sum, item) => sum + (item.qty || 1), 0);
+            const wB = document.getElementById('wishlistBadge');
+            const cB = document.getElementById('cartBadge');
+            const bwB = document.getElementById('bottomWishlistBadge');
+            const bcB = document.getElementById('bottomCartBadge');
+            if (wB) { if (wCount > 0) { wB.textContent = wCount; wB.style.display = 'block'; } else wB.style.display = 'none'; }
+            if (bwB) { if (wCount > 0) { bwB.textContent = wCount; bwB.style.display = 'block'; } else bwB.style.display = 'none'; }
+            if (cB) { if (cCount > 0) { cB.textContent = cCount; cB.style.display = 'block'; } else cB.style.display = 'none'; }
+            if (bcB) { if (cCount > 0) { bcB.textContent = cCount; bcB.style.display = 'block'; } else bcB.style.display = 'none'; }
+        }
+
+        function isInWishlist(id) { return getWishlist().includes(id); }
+        function renderStars(rating) {
+            const full = Math.floor(rating);
+            const half = rating % 1 >= 0.5 ? 1 : 0;
+            const empty = 5 - full - half;
+            return '★'.repeat(full) + (half ? '☆' : '') + '☆'.repeat(empty);
+        }
+
+        function renderActiveFilterChip() {
+            if (filterCategoryId && filterCategoryName) {
+                activeFilterChip.innerHTML = `
+                    <span class="active-filter-chip">
+                        <i class="fas fa-filter"></i> Category: ${filterCategoryName}
+                        <button id="clearFilterBtn" aria-label="Clear filter">✕</button>
+                    </span>
+                `;
+                document.getElementById('clearFilterBtn')?.addEventListener('click', () => {
+                    filterCategoryId = null;
+                    filterCategoryName = '';
+                    currentPage = 0;
+                    // Reload the query without category filter
+                    setupProductsListener();
+                    renderActiveFilterChip();
+                    updateBreadcrumb();
+                });
+            } else {
+                activeFilterChip.innerHTML = '';
+            }
+        }
+
+        function updateBreadcrumb() {
+            if (filterCategoryName) { breadcrumbCurrent.textContent = filterCategoryName; pageTitle.textContent = filterCategoryName; }
+            else { breadcrumbCurrent.textContent = 'Products'; pageTitle.textContent = 'Products'; }
+        }
+
+        function renderProducts() {
+            let filtered = allProducts.filter(p => p.isActive !== false);
+
+            if (filterCategoryId) {
+                filtered = filtered.filter(p => {
+                    if (p.categoryId === filterCategoryId) return true;
+                    const category = allCategories.find(c => c.id === filterCategoryId);
+                    if (category && p.categoryName === category.name) return true;
+                    return false;
+                });
+            }
+
+            // If permission error occurred and no products — show friendly state
+            if (productsError && allProducts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-products">
+                        <i class="fas fa-exclamation-circle" style="color:var(--gray-400);"></i>
+                        <h3>Unable to load products</h3>
+                        <p>Please refresh the page or try again later.</p>
+                        <a href="index.html" class="btn-primary">Back to Home</a>
+                    </div>
+                `;
+                resultsCount.textContent = '—';
+                loadMoreBtn.style.display = 'none';
+                return;
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-products">
+                        <i class="fas fa-box-open"></i>
+                        <h3>No Products Available</h3>
+                        <p>Check back later for new products.</p>
+                        <a href="index.html" class="btn-primary">Go to Home</a>
+                    </div>
+                `;
+                resultsCount.textContent = '0 products';
+                loadMoreBtn.style.display = 'none';
+                return;
+            }
+
+            const sort = document.getElementById('sortSelect').value;
+            let sorted = [...filtered];
+            if (sort === 'price-low') sorted.sort((a, b) => (a.price || 0) - (b.price || 0));
+            else if (sort === 'price-high') sorted.sort((a, b) => (b.price || 0) - (a.price || 0));
+            else if (sort === 'popular') sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+            else sorted.sort((a, b) => (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0));
+
+            const start = currentPage * productsPerPage;
+            const end = start + productsPerPage;
+            const pageProducts = sorted.slice(start, end);
+
+            let html = '<div class="product-grid">';
+            pageProducts.forEach((product) => {
+                const discount = product.oldPrice && product.oldPrice > product.price ?
+                    Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100) : 0;
+                const imageUrl = product.thumbnail || product.images?.[0]?.url || 'placeholder-product.jpg';
+                const inWishlist = isInWishlist(product.id);
+                const rating = product.rating || 0;
+                const sku = product.sku || '';
+
+                html += `
+                    <div class="product-card" data-id="${product.id}">
+                        ${discount > 0 ? `<span class="discount-badge">${discount}% OFF</span>` : ''}
+                        <div class="card-top-actions">
+                            <button class="wishlist-btn ${inWishlist ? 'active' : ''}" data-id="${product.id}" aria-label="Wishlist">
+                                <i class="${inWishlist ? 'fas' : 'far'} fa-heart"></i>
+                            </button>
+                            <button class="cart-btn" data-id="${product.id}" aria-label="Add to Cart">
+                                <i class="fas fa-shopping-bag"></i>
+                            </button>
+                        </div>
+                        <div class="product-img">
+                            <img src="${imageUrl}" alt="${product.name}" loading="lazy" onerror="this.src='placeholder-product.jpg'" />
+                        </div>
+                        <div class="prod-name">${product.name}</div>
+                        <div class="prod-category">${product.categoryName || 'Product'}${sku ? ' · ' + sku : ''}</div>
+                        <div class="prod-rating">${rating > 0 ? renderStars(rating) : '☆☆☆☆☆'}</div>
+                        <div>
+                            <span class="prod-price">₹${product.price}</span>
+                            ${product.oldPrice && product.oldPrice > product.price ? `<span class="prod-oldprice">₹${product.oldPrice}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+
+            container.innerHTML = html;
+            resultsCount.textContent = `${filtered.length} products`;
+
+            container.querySelectorAll('.product-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    if (e.target.closest('button')) return;
+                    window.location.href = `product.html?id=${this.dataset.id}`;
+                });
+            });
+
+            container.querySelectorAll('.wishlist-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const id = this.dataset.id;
+                    const wishlist = getWishlist();
+                    const idx = wishlist.indexOf(id);
+                    if (idx > -1) { wishlist.splice(idx, 1); this.classList.remove('active'); this.innerHTML = '<i class="far fa-heart"></i>'; showToast('Removed from wishlist', 'success'); }
+                    else { wishlist.push(id); this.classList.add('active'); this.innerHTML = '<i class="fas fa-heart"></i>'; showToast('Added to wishlist', 'success'); }
+                    saveWishlist(wishlist);
+                    updateBadges();
+                });
+            });
+
+            container.querySelectorAll('.cart-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const id = this.dataset.id;
+                    const product = allProducts.find(p => p.id === id);
+                    if (product) {
+                        if (!currentUser) { showToast('Please login to add items to cart', 'error'); return; }
+                        const cart = getCart();
+                        const existing = cart.find(item => item.id === id);
+                        if (existing) { existing.qty = (existing.qty || 1) + 1; }
+                        else {
+                            cart.push({
+                                id, qty: 1,
+                                price: product.price || 0,
+                                name: product.name || 'Product',
+                                image: product.thumbnail || product.images?.[0]?.url || '',
+                                oldPrice: product.oldPrice || 0,
+                                sku: product.sku || ''
+                            });
+                        }
+                        saveCart(cart);
+                        updateBadges();
+                        showToast('Added to cart!', 'success');
+                    }
+                });
+            });
+
+            if (end < filtered.length) {
+                loadMoreBtn.style.display = 'inline-block';
+                loadMoreBtn.textContent = `Load More (${end}/${filtered.length})`;
+            } else {
+                loadMoreBtn.style.display = 'none';
+            }
+        }
+
+        function setupProductsListener() {
+            if (unsubscribeProducts) { unsubscribeProducts(); unsubscribeProducts = null; }
+            productsError = null;
+            unsubscribeProducts = listenToActiveProducts((error, products) => {
+                if (error) {
+                    productsError = error;
+                    allProducts = [];
+                    renderProducts();
+                    return;
+                }
+                allProducts = products;
+                currentPage = 0;
+                renderProducts();
+                updateBadges();
+            }, { categoryId: filterCategoryId || undefined });
+        }
+
+        function setupCategoriesListener() {
+            if (unsubscribeCategories) { unsubscribeCategories(); unsubscribeCategories = null; }
+            unsubscribeCategories = listenToActiveCategories((error, items) => {
+                if (error) { allCategories = []; return; }
+                allCategories = items;
+                if (filterCategoryId) {
+                    const cat = allCategories.find(c => c.id === filterCategoryId);
+                    if (cat) {
+                        filterCategoryName = cat.name;
+                        updateBreadcrumb();
+                        renderActiveFilterChip();
+                        renderProducts();
+                    }
+                }
+            });
+        }
+
+        // SEARCH
+        function searchProductsLocal(queryText) {
+            if (!queryText || queryText.trim().length < 1) return [];
+            return searchProducts(allProducts, queryText);
+        }
+
+        function showSuggestions(input, containerId) {
+            const c = document.getElementById(containerId);
+            if (!c) return;
+            const q = input.trim();
+            if (!q || q.length < 1) { c.classList.remove('show'); return; }
+            const results = searchProductsLocal(q).slice(0, 6);
+            if (results.length === 0) {
+                c.innerHTML = `<div class="suggestion-empty">No products found for "${q}"</div>`;
+                c.classList.add('show');
+                return;
+            }
+            let html = '';
+            results.forEach(prod => {
+                const highlighted = (prod.name || '').replace(new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), m => `<span class="highlight">${m}</span>`);
+                const sku = prod.sku || '';
+                html += `<div class="suggestion-item" data-id="${prod.id}">
+                    <img src="${prod.thumbnail || 'placeholder-product.jpg'}" alt="${prod.name}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;" onerror="this.src='placeholder-product.jpg'" />
+                    <div class="suggestion-info">
+                        <div class="suggestion-name">${highlighted}</div>
+                        ${sku ? `<div class="suggestion-sku">SKU: <span class="sku-value">${sku}</span></div>` : ''}
+                        <div class="suggestion-meta">${prod.categoryName ? `<span class="category-tag">${prod.categoryName}</span>` : ''}</div>
+                    </div>
+                    <div class="suggestion-price">₹${prod.price}</div>
+                </div>`;
+            });
+            c.innerHTML = html;
+            c.classList.add('show');
+            c.querySelectorAll('.suggestion-item').forEach(item => {
+                item.addEventListener('click', function() { window.location.href = `product.html?id=${this.dataset.id}`; c.classList.remove('show'); });
+            });
+        }
+
+        function setupSearch(inputId, containerId) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            let timeout;
+            input.addEventListener('input', function() { clearTimeout(timeout); timeout = setTimeout(() => showSuggestions(this.value, containerId), 200); });
+            input.addEventListener('focus', function() { if (this.value.trim()) showSuggestions(this.value, containerId); });
+            input.addEventListener('blur', function() { setTimeout(() => { const c = document.getElementById(containerId); if (c) c.classList.remove('show'); }, 200); });
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    const c = document.getElementById(containerId); if (c) c.classList.remove('show');
+                    if (this.value.trim()) {
+                        const results = searchProductsLocal(this.value.trim());
+                        if (results.length > 0) window.location.href = `product.html?id=${results[0].id}`;
+                    }
+                }
+            });
+            const btn = document.getElementById(inputId === 'searchInput' ? 'searchBtn' : 'searchBtnMobile');
+            if (btn) {
+                btn.addEventListener('click', function() {
+                    const c = document.getElementById(containerId); if (c) c.classList.remove('show');
+                    if (input.value.trim()) {
+                        const results = searchProductsLocal(input.value.trim());
+                        if (results.length > 0) window.location.href = `product.html?id=${results[0].id}`;
+                    }
+                });
+            }
+        }
+
+        document.getElementById('sortSelect').addEventListener('change', () => { currentPage = 0; renderProducts(); });
+        loadMoreBtn.addEventListener('click', () => { currentPage++; renderProducts(); });
+
+        const urlParams = new URLSearchParams(window.location.search);
+        filterCategoryId = urlParams.get('category');
+        updateBreadcrumb();
+        renderActiveFilterChip();
+
+        // Wait for auth state BEFORE starting listeners (avoids race condition)
+        onAuthStateChanged(auth, async (user) => {
+            await loadUserData(user);
+            setupCategoriesListener();
+            setupProductsListener();
+            setupSearch('searchInput', 'searchSuggestions');
+            setupSearch('searchInputMobile', 'searchSuggestionsMobile');
+            updateBadges();
+        });
+
+        window.addEventListener('storage', updateBadges);
+
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebarDrawer');
+        const overlay = document.getElementById('sidebarOverlay');
+        const closeBtn = document.getElementById('sidebarClose');
+        menuToggle.addEventListener('click', () => { sidebar.classList.add('open'); overlay.classList.add('open'); document.body.style.overflow = 'hidden'; });
+        closeBtn.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = ''; });
+        overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = ''; });
+    </script>
+</body>
+</html>

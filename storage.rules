@@ -1,0 +1,44 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper: check if user is admin
+    function isAdmin() {
+      return request.auth != null && 
+             exists(/databases/(default)/documents/users/$(request.auth.uid)) &&
+             get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Helper: check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Product images - public read, admin write
+    match /products/{productId}/{imageName} {
+      allow read: if true;
+      allow write: if isAdmin() && 
+                    request.resource.size < 5 * 1024 * 1024 && // 5MB max
+                    request.resource.contentType.matches('image/.*');
+      allow delete: if isAdmin();
+    }
+    
+    // Banner images - public read, admin write
+    match /banners/{bannerId}/{imageName} {
+      allow read: if true;
+      allow write: if isAdmin() && 
+                    request.resource.size < 5 * 1024 * 1024 && // 5MB max
+                    request.resource.contentType.matches('image/.*');
+      allow delete: if isAdmin();
+    }
+    
+    // User avatars - public read, user write
+    match /avatars/{userId}/{imageName} {
+      allow read: if true;
+      allow write: if isAuthenticated() && 
+                    request.auth.uid == userId &&
+                    request.resource.size < 2 * 1024 * 1024 && // 2MB max
+                    request.resource.contentType.matches('image/.*');
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
+    }
+  }
+}

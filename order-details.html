@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5" />
+    <title>Sweet & Sour · Order Details</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        .order-details-page { padding: 1rem 0 2rem; }
+        .breadcrumb { font-size: 0.8rem; color: var(--gray-500); margin-bottom: 1rem; }
+        .breadcrumb a { color: var(--primary-blue); }
+        .breadcrumb a:hover { text-decoration: underline; }
+        .order-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; margin-bottom: 1.2rem; }
+        .order-header .order-info h1 { font-size: 1.3rem; font-weight: 700; }
+        .order-header .order-info .order-meta { font-size: 0.85rem; color: var(--gray-500); }
+        .order-header .order-status { padding: 0.3rem 1.2rem; border-radius: var(--radius-full); font-weight: 600; font-size: 0.85rem; }
+        .order-status.pending { background: #FEF3C7; color: #92400E; }
+        .order-status.confirmed { background: #DBEAFE; color: #1E40AF; }
+        .order-status.processing { background: #E0E7FF; color: #3730A3; }
+        .order-status.shipped { background: #D1FAE5; color: #065F46; }
+        .order-status.delivered { background: #D1FAE5; color: #065F46; }
+        .order-status.cancelled { background: #FEE2E2; color: #991B1B; }
+        .order-content { display: grid; grid-template-columns: 1fr; gap: 1.2rem; }
+        .order-section { background: var(--white); border-radius: var(--radius); padding: 1.2rem; border: 1px solid var(--gray-100); }
+        .order-section .section-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.5rem; }
+        .order-section .section-title i { color: var(--primary-blue); }
+        .order-item { display: flex; gap: 1rem; padding: 0.6rem 0; border-bottom: 1px solid var(--gray-50); }
+        .order-item:last-child { border-bottom: none; }
+        .order-item .item-image { width: 60px; height: 60px; background: var(--gray-100); border-radius: var(--radius-sm); overflow: hidden; flex-shrink: 0; }
+        .order-item .item-image img { width: 100%; height: 100%; object-fit: contain; }
+        .order-item .item-details { flex: 1; }
+        .order-item .item-details .item-name { font-weight: 600; font-size: 0.9rem; }
+        .order-item .item-details .item-meta { font-size: 0.8rem; color: var(--gray-500); }
+        .order-item .item-price { font-weight: 700; font-size: 0.9rem; text-align: right; color: var(--primary-blue); }
+        .order-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 0.3rem 1.5rem; font-size: 0.9rem; }
+        .order-summary .total { font-weight: 700; font-size: 1.1rem; border-top: 2px solid var(--gray-200); padding-top: 0.5rem; grid-column: 1 / -1; display: flex; justify-content: space-between; color: var(--primary-blue); }
+        .address-block { font-size: 0.9rem; line-height: 1.6; }
+        .address-block .name { font-weight: 600; }
+        .toast-container { bottom: 80px; }
+        @media (min-width: 768px) {
+            .order-content { grid-template-columns: 2fr 1fr; }
+            .order-content .order-items-section { grid-column: 1 / 2; }
+            .order-content .order-summary-section { grid-column: 2 / 3; }
+            .order-content .address-section { grid-column: 1 / 2; }
+        }
+    </style>
+</head>
+<body>
+    <header class="sticky-header">
+        <div class="container">
+            <div class="header-top">
+                <div class="header-left">
+                    <button class="hamburger" id="menuToggle" aria-label="Open menu"><i class="fas fa-bars"></i></button>
+                    <div class="brand-logo-placeholder"><img src="logo.png" alt="Sweet & Sour Logo" id="brandLogo" onerror="this.style.display='none'" /></div>
+                    <span class="brand-name"><span class="brand-sweet">Sweet</span><span class="brand-and">&amp;</span><span class="brand-sour">Sour</span></span>
+                </div>
+                <div class="header-center"></div>
+                <div class="header-right">
+                    <a href="wishlist.html" class="icon-wrap" aria-label="Wishlist"><i class="far fa-heart"></i><span class="badge-count" id="wishlistBadge">0</span></a>
+                    <a href="cart.html" class="icon-wrap" aria-label="Cart"><i class="fas fa-shopping-bag"></i><span class="badge-count" id="cartBadge">0</span></a>
+                    <a href="account.html" class="icon-wrap" id="profileIcon" aria-label="Profile"><div class="profile-avatar" id="profileAvatar"><div class="avatar-initial" id="avatarInitial">U</div></div></a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <nav class="sidebar-drawer" id="sidebarDrawer">
+        <button class="sidebar-close" id="sidebarClose"><i class="fas fa-times"></i></button>
+        <div class="drawer-brand"><span class="brand-sweet">Sweet</span><span class="brand-and">&amp;</span><span class="brand-sour">Sour</span></div>
+        <ul class="drawer-nav">
+            <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="categories.html"><i class="fas fa-th-large"></i> Categories</a></li>
+            <li><a href="wishlist.html"><i class="far fa-heart"></i> Wishlist</a></li>
+            <li><a href="cart.html"><i class="fas fa-shopping-bag"></i> Cart</a></li>
+            <li><a href="account.html"><i class="far fa-user"></i> My Account</a></li>
+            <li><a href="orders.html"><i class="fas fa-shopping-bag"></i> Orders</a></li>
+            <li><a href="contact.html"><i class="fas fa-phone"></i> Contact</a></li>
+            <li id="adminNavItem" style="display:none;"><a href="admin.html"><i class="fas fa-shield-alt"></i> Admin</a></li>
+        </ul>
+    </nav>
+
+    <main class="container order-details-page">
+        <div id="orderContainer">
+            <div style="display:flex;justify-content:center;padding:2rem 0;"><div class="loading-spinner"></div></div>
+        </div>
+    </main>
+
+    <div class="toast-container" id="toast"></div>
+
+    <nav class="bottom-nav" id="bottomNav">
+        <a href="index.html" class="bottom-nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="categories.html" class="bottom-nav-item"><i class="fas fa-th-large"></i><span>Categories</span></a>
+        <a href="wishlist.html" class="bottom-nav-item"><i class="far fa-heart"></i><span>Wishlist</span><span class="badge-count" id="bottomWishlistBadge">0</span></a>
+        <a href="cart.html" class="bottom-nav-item"><i class="fas fa-shopping-bag"></i><span>Cart</span><span class="badge-count" id="bottomCartBadge">0</span></a>
+        <a href="account.html" class="bottom-nav-item"><i class="far fa-user"></i><span>Account</span></a>
+    </nav>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import { initializeApp } from 'firebase/app';
+        import { getAuth, onAuthStateChanged } from 'firebase/auth';
+        import { getFirestore, doc, getDoc } from 'firebase/firestore';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAfGWLLJ-bmMrbkhLkdwhxIo2QrW7mYKQA",
+            authDomain: "sweet-and-sour-aa364.firebaseapp.com",
+            projectId: "sweet-and-sour-aa364",
+            storageBucket: "sweet-and-sour-aa364.firebasestorage.app",
+            messagingSenderId: "1046434031562",
+            appId: "1:1046434031562:web:b325998964afbfe4105133"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const container = document.getElementById('orderContainer');
+        const toast = document.getElementById('toast');
+        const avatarInitial = document.getElementById('avatarInitial');
+        const profileIcon = document.getElementById('profileIcon');
+        const adminNavItem = document.getElementById('adminNavItem');
+
+        let toastTimer = null;
+        let currentUser = null;
+        let userData = null;
+
+        function getCartCount() { try { return (JSON.parse(localStorage.getItem('ss_cart_v1')) || []).reduce((s, i) => s + (i.qty || 1), 0); } catch { return 0; } }
+        function getWishlistCount() { try { return (JSON.parse(localStorage.getItem('ss_wishlist_v1')) || []).length; } catch { return 0; } }
+
+        async function loadUserData(user) {
+            if (!user) { userData = null; currentUser = null; updateProfileAvatar(); updateAdminMenu(); return; }
+            currentUser = user;
+            try {
+                const docRef = doc(db, 'users', user.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) { userData = docSnap.data(); }
+                else { userData = { name: user.displayName || user.email?.split('@')[0] || 'User', role: 'customer' }; }
+            } catch (error) { userData = { name: user.displayName || user.email?.split('@')[0] || 'User', role: 'customer' }; }
+            updateProfileAvatar(); updateAdminMenu();
+        }
+
+        function updateProfileAvatar() {
+            if (!currentUser) { avatarInitial.textContent = 'U'; avatarInitial.className = 'avatar-initial'; profileIcon.href = 'login.html'; return; }
+            profileIcon.href = 'account.html';
+            if (userData && userData.role === 'admin') { avatarInitial.className = 'avatar-initial admin'; avatarInitial.textContent = 'A'; }
+            else if (userData && userData.name) { avatarInitial.className = 'avatar-initial'; avatarInitial.textContent = userData.name.charAt(0).toUpperCase(); }
+            else if (currentUser.displayName) { avatarInitial.className = 'avatar-initial'; avatarInitial.textContent = currentUser.displayName.charAt(0).toUpperCase(); }
+            else if (currentUser.email) { avatarInitial.className = 'avatar-initial'; avatarInitial.textContent = currentUser.email.charAt(0).toUpperCase(); }
+            else { avatarInitial.className = 'avatar-initial'; avatarInitial.textContent = 'U'; }
+        }
+
+        function updateAdminMenu() { adminNavItem.style.display = (currentUser && userData && userData.role === 'admin') ? 'block' : 'none'; }
+
+        function updateBadges() {
+            const wCount = getWishlistCount();
+            const cCount = getCartCount();
+            const wishlistBadge = document.getElementById('wishlistBadge');
+            const cartBadge = document.getElementById('cartBadge');
+            const bottomWishlist = document.getElementById('bottomWishlistBadge');
+            const bottomCart = document.getElementById('bottomCartBadge');
+            if (wCount > 0) { wishlistBadge.textContent = wCount; wishlistBadge.style.display = 'block'; if (bottomWishlist) { bottomWishlist.textContent = wCount; bottomWishlist.style.display = 'block'; } }
+            else { wishlistBadge.style.display = 'none'; if (bottomWishlist) { bottomWishlist.style.display = 'none'; } }
+            if (cCount > 0) { cartBadge.textContent = cCount; cartBadge.style.display = 'block'; if (bottomCart) { bottomCart.textContent = cCount; bottomCart.style.display = 'block'; } }
+            else { cartBadge.style.display = 'none'; if (bottomCart) { bottomCart.style.display = 'none'; } }
+        }
+
+        function showToast(message, type = 'error') {
+            toast.textContent = message;
+            toast.className = `toast-container ${type}`;
+            toast.style.display = 'block';
+            requestAnimationFrame(() => toast.classList.add('show'));
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.style.display = 'none', 400); }, 3000);
+        }
+
+        function renderOrder(order) {
+            const date = order.date ? new Date(order.date) : new Date();
+            const status = order.status || 'pending';
+            const items = order.items || [];
+
+            let itemsHtml = '';
+            items.forEach(item => {
+                const img = item.image || 'placeholder-product.jpg';
+                itemsHtml += `
+                    <div class="order-item">
+                        <div class="item-image"><img src="${img}" alt="${item.name}" loading="lazy" onerror="this.src='placeholder-product.jpg'" /></div>
+                        <div class="item-details">
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-meta">Qty: ${item.qty || 1}${item.sku ? ' · SKU: ' + item.sku : ''}</div>
+                        </div>
+                        <div class="item-price">₹${(item.price || 0) * (item.qty || 1)}</div>
+                    </div>
+                `;
+            });
+
+            const subtotal = order.subtotal || 0;
+            const discount = order.discount || 0;
+            const delivery = order.delivery || 0;
+            const total = order.total || 0;
+
+            container.innerHTML = `
+                <div class="breadcrumb"><a href="orders.html">My Orders</a> / <span>Order #${order.id}</span></div>
+                <div class="order-header">
+                    <div class="order-info">
+                        <h1>Order #${order.id}</h1>
+                        <div class="order-meta">Placed on ${date.toLocaleDateString()} at ${date.toLocaleTimeString()}</div>
+                    </div>
+                    <span class="order-status ${status}">${status.charAt(0).toUpperCase() + status.slice(1)}</span>
+                </div>
+
+                <div class="order-content">
+                    <div class="order-section order-items-section">
+                        <div class="section-title"><i class="fas fa-box"></i> Items</div>
+                        ${itemsHtml || '<p style="color:var(--gray-500);">No items found.</p>'}
+                    </div>
+
+                    <div class="order-section order-summary-section">
+                        <div class="section-title"><i class="fas fa-receipt"></i> Order Summary</div>
+                        <div class="order-summary">
+                            <span>Subtotal</span><span style="text-align:right;">₹${subtotal}</span>
+                            ${discount > 0 ? `<span>Discount</span><span style="text-align:right;color:var(--accent);">-₹${discount}</span>` : ''}
+                            <span>Delivery</span><span style="text-align:right;">${delivery === 0 ? 'FREE' : '₹'+delivery}</span>
+                            <div class="total"><span>Total</span><span>₹${total}</span></div>
+                        </div>
+                    </div>
+
+                    <div class="order-section address-section">
+                        <div class="section-title"><i class="fas fa-map-pin"></i> Delivery Address</div>
+                        <div class="address-block">
+                            <div class="name">${order.customerName || 'N/A'}</div>
+                            <div>${order.address || 'N/A'}</div>
+                            <div>${order.city || ''}${order.state ? ', '+order.state : ''} ${order.pincode || ''}</div>
+                            <div>${order.phone || ''}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function loadOrder() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('id');
+            if (!orderId) { container.innerHTML = `<p style="color:var(--gray-500);text-align:center;">Order not found.</p>`; return; }
+            try {
+                const orders = JSON.parse(localStorage.getItem('ss_orders_v1')) || [];
+                const order = orders.find(o => o.id === orderId);
+                if (order) { renderOrder(order); return; }
+            } catch {}
+            renderOrder({
+                id: orderId, date: new Date().toISOString(), status: 'pending',
+                customerName: 'Customer', phone: '7698242215',
+                address: 'Bhagal Tala Main Road, City Masala Exit', city: 'Surat', state: 'Gujarat', pincode: '395001',
+                items: [{ name: 'Product', price: 0, qty: 1, image: 'placeholder-product.jpg' }],
+                subtotal: 0, discount: 0, delivery: 0, total: 0
+            });
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            await loadUserData(user);
+            if (user) { loadOrder(); updateBadges(); }
+            else {
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-lock"></i><h3>Please Login</h3><p>Login to view order details.</p><a href="login.html" class="btn-primary">Login</a></div>`;
+                updateBadges();
+            }
+        });
+
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebarDrawer');
+        const overlay = document.getElementById('sidebarOverlay');
+        const closeBtn = document.getElementById('sidebarClose');
+        menuToggle.addEventListener('click', () => { sidebar.classList.add('open'); overlay.classList.add('open'); document.body.style.overflow = 'hidden'; });
+        closeBtn.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = ''; });
+        overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = ''; });
+    </script>
+</body>
+</html>

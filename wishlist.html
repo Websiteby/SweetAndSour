@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5" />
+    <title>Sweet & Sour · My Wishlist</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        .wishlist-page { padding: 1rem 0 2rem; }
+        .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; }
+        .page-header h1 { font-size: 1.4rem; font-weight: 700; }
+        .page-header h1 i { color: var(--primary-blue); }
+        .page-header .count { background: var(--gray-100); padding: 0.15rem 0.8rem; border-radius: var(--radius-full); font-size: 0.8rem; font-weight: 600; color: var(--gray-600); }
+        .wishlist-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+        .wishlist-item {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 0.8rem 0.6rem;
+            border: 1px solid var(--gray-100);
+            transition: all 0.4s var(--transition-bounce);
+            position: relative;
+            cursor: pointer;
+            min-height: 240px;
+        }
+        .wishlist-item:hover { border-color: var(--primary-blue); box-shadow: var(--shadow); transform: translateY(-4px); }
+        .wishlist-item .item-image { height: 140px; background: var(--gray-100); border-radius: var(--radius-sm); overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .wishlist-item .item-image img { width: 100%; height: 100%; object-fit: contain; padding: 0.3rem; transition: transform 0.4s var(--transition-bounce); }
+        .wishlist-item:hover .item-image img { transform: scale(1.05); }
+        .wishlist-item .item-name { font-weight: 600; font-size: 0.9rem; margin: 0.3rem 0 0.05rem; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+        .wishlist-item .item-category { font-size: 0.65rem; color: var(--gray-500); }
+        .wishlist-item .item-price { font-weight: 700; font-size: 0.95rem; color: var(--primary-blue); }
+        .wishlist-item .item-oldprice { font-size: 0.65rem; color: var(--gray-400); text-decoration: line-through; margin-left: 4px; }
+        .wishlist-item .item-actions { display: flex; gap: 0.5rem; margin-top: 0.4rem; }
+        .wishlist-item .item-actions button { flex: 1; padding: 0.25rem 0.5rem; border-radius: var(--radius-full); font-size: 0.7rem; font-weight: 600; transition: var(--transition); }
+        .wishlist-item .item-actions .cart-btn { background: var(--primary-blue); color: var(--white); }
+        .wishlist-item .item-actions .cart-btn:hover { background: var(--primary-blue-dark); transform: scale(1.02); }
+        .wishlist-item .item-actions .remove-btn { background: var(--gray-100); color: var(--gray-600); }
+        .wishlist-item .item-actions .remove-btn:hover { background: #fee2e2; color: #D32F2F; }
+        .wishlist-item .remove-icon {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--gray-200);
+            color: var(--gray-500);
+            transition: var(--transition);
+            z-index: 2;
+        }
+        .wishlist-item .remove-icon:hover { background: #fee2e2; color: #D32F2F; transform: scale(1.1); }
+        .toast-container { bottom: 80px; }
+        @media (min-width: 640px) { .wishlist-grid { grid-template-columns: repeat(3, 1fr); } .wishlist-item .item-image { height: 160px; } }
+        @media (min-width: 1024px) { .wishlist-grid { grid-template-columns: repeat(4, 1fr); } .wishlist-item .item-image { height: 180px; } }
+        @media (max-width: 480px) { .wishlist-item .item-image { height: 110px; } .wishlist-item .item-name { font-size: 0.8rem; } .wishlist-item { min-height: 200px; } }
+    </style>
+</head>
+<body>
+    <header class="sticky-header">
+        <div class="container">
+            <div class="header-top">
+                <div class="header-left">
+                    <button class="hamburger" id="menuToggle" aria-label="Open menu"><i class="fas fa-bars"></i></button>
+                    <div class="brand-logo-placeholder"><img src="logo.png" alt="Sweet & Sour Logo" id="brandLogo" onerror="this.style.display='none'" /></div>
+                    <span class="brand-name"><span class="brand-sweet">Sweet</span><span class="brand-and">&amp;</span><span class="brand-sour">Sour</span></span>
+                </div>
+                <div class="header-center"></div>
+                <div class="header-right">
+                    <a href="wishlist.html" class="icon-wrap" aria-label="Wishlist"><i class="far fa-heart"></i><span class="badge-count" id="wishlistBadge">0</span></a>
+                    <a href="cart.html" class="icon-wrap" aria-label="Cart"><i class="fas fa-shopping-bag"></i><span class="badge-count" id="cartBadge">0</span></a>
+                    <a href="account.html" class="icon-wrap" id="profileIcon" aria-label="Profile"><div class="profile-avatar" id="profileAvatar"><div class="avatar-initial" id="avatarInitial">U</div></div></a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <nav class="sidebar-drawer" id="sidebarDrawer">
+        <button class="sidebar-close" id="sidebarClose"><i class="fas fa-times"></i></button>
+        <div class="drawer-brand"><span class="brand-sweet">Sweet</span><span class="brand-and">&amp;</span><span class="brand-sour">Sour</span></div>
+        <ul class="drawer-nav">
+            <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="categories.html"><i class="fas fa-th-large"></i> Categories</a></li>
+            <li><a href="wishlist.html"><i class="far fa-heart"></i> Wishlist</a></li>
+            <li><a href="cart.html"><i class="fas fa-shopping-bag"></i> Cart</a></li>
+            <li><a href="account.html"><i class="far fa-user"></i> My Account</a></li>
+            <li><a href="orders.html"><i class="fas fa-shopping-bag"></i> Orders</a></li>
+            <li><a href="contact.html"><i class="fas fa-phone"></i> Contact</a></li>
+            <li id="adminNavItem" style="display:none;"><a href="admin.html"><i class="fas fa-shield-alt"></i> Admin</a></li>
+        </ul>
+    </nav>
+
+    <main class="container wishlist-page">
+        <div class="page-header">
+            <h1><i class="far fa-heart"></i> My Wishlist</h1>
+            <span class="count" id="wishlistCount">0 items</span>
+        </div>
+        <div id="wishlistContainer">
+            <div class="skeleton-grid">
+                <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
+                <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
+            </div>
+        </div>
+    </main>
+
+    <div class="toast-container" id="toast"></div>
+
+    <nav class="bottom-nav" id="bottomNav">
+        <a href="index.html" class="bottom-nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="categories.html" class="bottom-nav-item"><i class="fas fa-th-large"></i><span>Categories</span></a>
+        <a href="wishlist.html" class="bottom-nav-item active"><i class="far fa-heart"></i><span>Wishlist</span><span class="badge-count" id="bottomWishlistBadge">0</span></a>
+        <a href="cart.html" class="bottom-nav-item"><i class="fas fa-shopping-bag"></i><span>Cart</span><span class="badge-count" id="bottomCartBadge">0</span></a>
+        <a href="account.html" class="bottom-nav-item"><i class="far fa-user"></i><span>Account</span></a>
+    </nav>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import { initializeApp } from 'firebase/app';
+        import { getAuth, onAuthStateChanged } from 'firebase/auth';
+        import { getFirestore, doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAfGWLLJ-bmMrbkhLkdwhxIo2QrW7mYKQA",
+            authDomain: "sweet-and-sour-aa364.firebaseapp.com",
+            projectId: "sweet-and-sour-aa364",
+            storageBucket: "sweet-and-sour-aa364.firebasestorage.app",
+            messagingSenderId: "1046434031562",
+            appId: "1:1046434031562:web:b325998964afbfe4105133"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const container = document.getElementById('wishlistContainer');
+        const countEl = document.getElementById('wishlistCount');
+        const toast = document.getElementById('toast');
+        const avatarInitial = document.getElementById('avatarInitial');
+        const profileIcon = document.getElementById('profileIcon');
+        const adminNavItem = document.getElementById('adminNavItem');
+
+        let toastTimer = null;
+        let currentUser = null;
+        let userData = null;
+        let cachedProducts = {};
+
+        function getWishlist() { try { return JSON.parse(localStorage.getItem('ss_wishlist_v1')) || []; } catch { return []; } }
+        function saveWishlist(wishlist) { localStorage.setItem('ss_wishlist_v1', JSON.stringify(wishlist)); }
+        function getCart() { try { return JSON.parse(localStorage.getItem('ss_cart_v1')) || []; } catch { return []; } }
+        function saveCart(cart) { localStorage.setItem('ss_cart_v1', JSON.stringify(cart)); }
+
+        async function loadUserData(user) {
+            if (!user) { userData = null; currentUser = null; updateProfileAvatar(); updateAdminMenu(); return; }
+            currentUser = user;
+            try {
+                const docRef = doc(db, 'users', user.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) { userData = docSnap.data(); } else { userData = { name: user.displayName || user.email?.split('@')[0] || 'User', role: 'customer' }; }
+            } catch (error) { userData = { name: user.displayName || user.email?.split('@')[0] || 'User', role: 'customer' }; }
+            updateProfileAvatar(); updateAdminMenu();
+        }
+
+        function updateProfileAvatar() {
+            if (!currentUser) { avatarInitial.textContent = 'U'; avatarInitial.className = 'avatar-initial'; profileIcon.href = 'login.html'; return; }
+            profileIcon.href = 'account.html';
+            if (userData && userData.role === 'admin') { avatarInitial.className = 'avatar-initial admin'; avatarInitial.textContent = 'A'; }
+            else if (userData && userData.name) { avatarInitial.className = 'avatar-initial'; avatarInitial.textContent = userData.name.charAt(0).toUpperCase(); }
+            else if (currentUser.displayName) { avatarInitial.className = 'avatar-initial'; avatarInitial.textContent = currentUser.displayName.charAt(0).toUpperCase(); }
+            else if (currentUser.email) { avatarInitial.className = 'avatar-initial'; avatarInitial.textContent = currentUser.email.charAt(0).toUpperCase(); }
+            else { avatarInitial.className = 'avatar-initial'; avatarInitial.textContent = 'U'; }
+        }
+
+        function updateAdminMenu() { adminNavItem.style.display = (currentUser && userData && userData.role === 'admin') ? 'block' : 'none'; }
+
+        function showToast(message, type = 'success') {
+            toast.textContent = message;
+            toast.className = `toast-container ${type}`;
+            toast.style.display = 'block';
+            requestAnimationFrame(() => toast.classList.add('show'));
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.style.display = 'none', 400); }, 3000);
+        }
+
+        function updateBadges() {
+            const wishlist = getWishlist();
+            const cart = getCart();
+            const wCount = wishlist.length;
+            const cCount = cart.reduce((sum, item) => sum + (item.qty || 1), 0);
+            const wishlistBadge = document.getElementById('wishlistBadge');
+            const cartBadge = document.getElementById('cartBadge');
+            const bottomWishlist = document.getElementById('bottomWishlistBadge');
+            const bottomCart = document.getElementById('bottomCartBadge');
+            if (wCount > 0) { wishlistBadge.textContent = wCount; wishlistBadge.style.display = 'block'; if (bottomWishlist) { bottomWishlist.textContent = wCount; bottomWishlist.style.display = 'block'; } }
+            else { wishlistBadge.style.display = 'none'; if (bottomWishlist) { bottomWishlist.style.display = 'none'; } }
+            if (cCount > 0) { cartBadge.textContent = cCount; cartBadge.style.display = 'block'; if (bottomCart) { bottomCart.textContent = cCount; bottomCart.style.display = 'block'; } }
+            else { cartBadge.style.display = 'none'; if (bottomCart) { bottomCart.style.display = 'none'; } }
+        }
+
+        async function fetchProduct(id) {
+            if (cachedProducts[id]) return cachedProducts[id];
+            try {
+                const docRef = doc(db, 'products', id);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const product = {
+                        id: docSnap.id,
+                        ...data,
+                        thumbnail: data.thumbnail || data.images?.[0]?.url || 'placeholder-product.jpg',
+                        oldPrice: data.oldPrice || data.salePrice || 0,
+                        categoryName: data.categoryName || data.category || 'Product',
+                        sku: data.sku || data.SKU || data.productSku || data.productSKU || ''
+                    };
+                    cachedProducts[id] = product;
+                    return product;
+                }
+            } catch (error) { console.error('Error fetching product:', error); }
+            return null;
+        }
+
+        async function renderWishlist() {
+            const wishlistIds = getWishlist();
+            if (wishlistIds.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="far fa-heart"></i>
+                        <h3>Your Wishlist is Empty</h3>
+                        <p>Discover products you love and save them here.</p>
+                        <a href="products.html" class="btn-primary">Continue Shopping</a>
+                    </div>
+                `;
+                countEl.textContent = '0 items';
+                updateBadges();
+                return;
+            }
+
+            const products = await Promise.all(wishlistIds.map(id => fetchProduct(id)));
+            const validProducts = products.filter(p => p !== null);
+
+            if (validProducts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="far fa-heart"></i>
+                        <h3>Your Wishlist is Empty</h3>
+                        <p>Discover products you love and save them here.</p>
+                        <a href="products.html" class="btn-primary">Continue Shopping</a>
+                    </div>
+                `;
+                countEl.textContent = '0 items';
+                return;
+            }
+
+            let html = `<div class="wishlist-grid">`;
+            validProducts.forEach(item => {
+                const price = item.price || 0;
+                const oldPrice = item.oldPrice || price;
+                html += `
+                    <div class="wishlist-item" data-id="${item.id}">
+                        <button class="remove-icon" data-id="${item.id}" aria-label="Remove"><i class="fas fa-times"></i></button>
+                        <div class="item-image">
+                            <img src="${item.thumbnail || 'placeholder-product.jpg'}" alt="${item.name}" loading="lazy" onerror="this.src='placeholder-product.jpg'" />
+                        </div>
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-category">${item.categoryName || 'Product'}${item.sku ? ' · ' + item.sku : ''}</div>
+                        <div>
+                            <span class="item-price">₹${price}</span>
+                            ${oldPrice > price ? `<span class="item-oldprice">₹${oldPrice}</span>` : ''}
+                        </div>
+                        <div class="item-actions">
+                            <button class="cart-btn" data-id="${item.id}"><i class="fas fa-shopping-bag"></i> Add to Cart</button>
+                            <button class="remove-btn" data-id="${item.id}">Remove</button>
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+            container.innerHTML = html;
+            countEl.textContent = `${validProducts.length} items`;
+
+            container.querySelectorAll('.remove-icon, .remove-btn').forEach(el => {
+                el.addEventListener('click', function(e) { e.stopPropagation(); removeFromWishlist(this.dataset.id); });
+            });
+            container.querySelectorAll('.cart-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) { e.stopPropagation(); addToCart(this.dataset.id); });
+            });
+            container.querySelectorAll('.wishlist-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    if (e.target.closest('button')) return;
+                    window.location.href = `product.html?id=${this.dataset.id}`;
+                });
+            });
+
+            updateBadges();
+        }
+
+        function removeFromWishlist(productId) {
+            const wishlist = getWishlist();
+            saveWishlist(wishlist.filter(id => id !== productId));
+            renderWishlist();
+            showToast('Removed from wishlist', 'success');
+        }
+
+        async function addToCart(productId) {
+            if (!currentUser) { showToast('Please login to add items to cart', 'error'); return; }
+            const product = await fetchProduct(productId);
+            if (!product) { showToast('Product not found', 'error'); return; }
+            const cart = getCart();
+            const existing = cart.find(i => i.id === productId);
+            if (existing) { existing.qty = (existing.qty || 1) + 1; }
+            else {
+                cart.push({
+                    id: productId,
+                    qty: 1,
+                    price: product.price || 0,
+                    name: product.name || 'Product',
+                    image: product.thumbnail || '',
+                    oldPrice: product.oldPrice || 0,
+                    sku: product.sku || ''
+                });
+            }
+            saveCart(cart);
+            updateBadges();
+            showToast('Added to cart!', 'success');
+        }
+
+        onAuthStateChanged(auth, async (user) => { await loadUserData(user); renderWishlist(); });
+        window.addEventListener('storage', (e) => { if (e.key === 'ss_wishlist_v1' || e.key === 'ss_cart_v1') renderWishlist(); });
+
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebarDrawer');
+        const overlay = document.getElementById('sidebarOverlay');
+        const closeBtn = document.getElementById('sidebarClose');
+        menuToggle.addEventListener('click', () => { sidebar.classList.add('open'); overlay.classList.add('open'); document.body.style.overflow = 'hidden'; });
+        closeBtn.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = ''; });
+        overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = ''; });
+    </script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5" />
+    <title>Sweet & Sour · Order Confirmed</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        .success-page { min-height: 60vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; }
+        .success-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 3rem 2rem;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--gray-100);
+        }
+        .success-card .icon {
+            font-size: 5rem;
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+            animation: successPop 0.6s var(--transition-bounce);
+        }
+        @keyframes successPop {
+            0% { transform: scale(0) rotate(-20deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+        .success-card h1 { font-size: 1.8rem; font-weight: 800; color: var(--dark-text); }
+        .success-card p { color: var(--gray-500); margin: 0.5rem 0 1.5rem; font-size: 0.95rem; }
+        .success-card .order-id {
+            background: var(--gray-50);
+            padding: 0.5rem;
+            border-radius: var(--radius-sm);
+            font-family: monospace;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--gray-200);
+            color: var(--primary-blue);
+        }
+        .success-card .actions { display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap; }
+        .success-card .actions .btn-primary { padding: 0.6rem 1.5rem; }
+        .success-card .actions .btn-secondary { padding: 0.6rem 1.5rem; }
+        .whatsapp-message {
+            background: #E8F5E9;
+            padding: 0.8rem;
+            border-radius: var(--radius-sm);
+            margin: 0.8rem 0;
+            font-size: 0.8rem;
+            color: var(--gray-600);
+            border-left: 3px solid #25D366;
+            text-align: left;
+        }
+        .whatsapp-message i { color: #25D366; }
+        @media (max-width: 480px) { .success-card { padding: 2rem 1rem; } .success-card h1 { font-size: 1.4rem; } }
+    </style>
+</head>
+<body>
+    <header class="sticky-header">
+        <div class="container">
+            <div class="header-top">
+                <div class="header-left">
+                    <div class="brand-logo-placeholder"><img src="logo.png" alt="Sweet & Sour Logo" id="brandLogo" onerror="this.style.display='none'" /></div>
+                    <span class="brand-name"><span class="brand-sweet">Sweet</span><span class="brand-and">&amp;</span><span class="brand-sour">Sour</span></span>
+                </div>
+                <div class="header-right">
+                    <a href="cart.html" class="icon-wrap" aria-label="Cart"><i class="fas fa-shopping-bag"></i><span class="badge-count" id="cartBadge">0</span></a>
+                    <a href="account.html" class="icon-wrap" id="profileIcon" aria-label="Profile"><div class="profile-avatar" id="profileAvatar"><div class="avatar-initial" id="avatarInitial">U</div></div></a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container success-page">
+        <div class="success-card">
+            <div class="icon"><i class="fas fa-check-circle"></i></div>
+            <h1>Order Placed! 🎉</h1>
+            <p>Your order has been sent to Sweet & Sour via WhatsApp. You'll receive a confirmation shortly.</p>
+            <div class="order-id" id="orderIdDisplay">Order #<span id="orderId"></span></div>
+            <div class="whatsapp-message">
+                <i class="fab fa-whatsapp"></i> We've sent your order details to our WhatsApp. Please check your WhatsApp for confirmation.
+            </div>
+            <div class="actions">
+                <a href="orders.html" class="btn-primary"><i class="fas fa-shopping-bag"></i> View Orders</a>
+                <a href="index.html" class="btn-secondary"><i class="fas fa-home"></i> Home</a>
+            </div>
+        </div>
+    </main>
+
+    <div class="toast-container" id="toast"></div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import { initializeApp } from 'firebase/app';
+        import { getAuth, onAuthStateChanged } from 'firebase/auth';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAfGWLLJ-bmMrbkhLkdwhxIo2QrW7mYKQA",
+            authDomain: "sweet-and-sour-aa364.firebaseapp.com",
+            projectId: "sweet-and-sour-aa364",
+            storageBucket: "sweet-and-sour-aa364.firebasestorage.app",
+            messagingSenderId: "1046434031562",
+            appId: "1:1046434031562:web:b325998964afbfe4105133"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('id');
+        if (orderId) { document.getElementById('orderId').textContent = orderId; }
+
+        const avatarInitial = document.getElementById('avatarInitial');
+        const profileIcon = document.getElementById('profileIcon');
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                profileIcon.href = 'account.html';
+                avatarInitial.textContent = user.email?.charAt(0).toUpperCase() || 'U';
+                avatarInitial.className = 'avatar-initial';
+            } else {
+                avatarInitial.textContent = 'U';
+                avatarInitial.className = 'avatar-initial';
+                profileIcon.href = 'login.html';
+            }
+        });
+
+        document.getElementById('cartBadge').style.display = 'none';
+    </script>
+</body>
+</html>

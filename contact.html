@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5" />
+    <title>Sweet & Sour · Contact</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        .contact-page { padding: 1rem 0 2rem; }
+        .contact-header { text-align: center; margin-bottom: 1.5rem; }
+        .contact-header h1 { font-size: 1.6rem; font-weight: 700; }
+        .contact-header p { color: var(--gray-500); }
+        .contact-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+        .contact-info { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .contact-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            text-align: center;
+            border: 1px solid var(--gray-100);
+            transition: var(--transition);
+        }
+        .contact-card:hover { border-color: var(--primary-blue); transform: translateY(-4px); box-shadow: var(--shadow); }
+        .contact-card i { font-size: 1.8rem; color: var(--primary-blue); margin-bottom: 0.3rem; }
+        .contact-card h4 { font-weight: 600; font-size: 0.9rem; }
+        .contact-card p { font-size: 0.85rem; color: var(--gray-500); }
+        .contact-card a { color: var(--primary-blue); }
+        .contact-form {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            border: 1px solid var(--gray-100);
+        }
+        .contact-form h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; }
+        .contact-form .form-group { margin-bottom: 0.8rem; }
+        .contact-form label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.2rem; }
+        .contact-form input, .contact-form textarea {
+            width: 100%;
+            padding: 0.6rem 1rem;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            font-size: 0.95rem;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+        .contact-form input:focus, .contact-form textarea:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(26,140,255,0.08);
+        }
+        .contact-form textarea { min-height: 120px; resize: vertical; }
+        .contact-form .btn-primary { width: 100%; padding: 0.7rem; }
+        .toast-container { bottom: 80px; }
+        @media (min-width: 768px) {
+            .contact-grid { grid-template-columns: 1fr 1fr; }
+            .contact-info { grid-template-columns: 1fr 1fr; }
+            .contact-form .btn-primary { width: auto; }
+        }
+        @media (max-width: 480px) { .contact-info { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <header class="sticky-header">
+        <div class="container">
+            <div class="header-top">
+                <div class="header-left">
+                    <button class="hamburger" id="menuToggle" aria-label="Open menu"><i class="fas fa-bars"></i></button>
+                    <div class="brand-logo-placeholder"><img src="logo.png" alt="Sweet & Sour Logo" id="brandLogo" onerror="this.style.display='none'" /></div>
+                    <span class="brand-name"><span class="brand-sweet">Sweet</span><span class="brand-and">&amp;</span><span class="brand-sour">Sour</span></span>
+                </div>
+                <div class="header-center"></div>
+                <div class="header-right">
+                    <a href="wishlist.html" class="icon-wrap" aria-label="Wishlist"><i class="far fa-heart"></i><span class="badge-count" id="wishlistBadge">0</span></a>
+                    <a href="cart.html" class="icon-wrap" aria-label="Cart"><i class="fas fa-shopping-bag"></i><span class="badge-count" id="cartBadge">0</span></a>
+                    <a href="account.html" class="icon-wrap" id="profileIcon" aria-label="Profile"><div class="profile-avatar" id="profileAvatar"><div class="avatar-initial" id="avatarInitial">U</div></div></a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <nav class="sidebar-drawer" id="sidebarDrawer">
+        <button class="sidebar-close" id="sidebarClose"><i class="fas fa-times"></i></button>
+        <div class="drawer-brand"><span class="brand-sweet">Sweet</span><span class="brand-and">&amp;</span><span class="brand-sour">Sour</span></div>
+        <ul class="drawer-nav">
+            <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="categories.html"><i class="fas fa-th-large"></i> Categories</a></li>
+            <li><a href="wishlist.html"><i class="far fa-heart"></i> Wishlist</a></li>
+            <li><a href="cart.html"><i class="fas fa-shopping-bag"></i> Cart</a></li>
+            <li><a href="account.html"><i class="far fa-user"></i> My Account</a></li>
+            <li><a href="orders.html"><i class="fas fa-shopping-bag"></i> Orders</a></li>
+            <li><a href="contact.html"><i class="fas fa-phone"></i> Contact</a></li>
+            <li id="adminNavItem" style="display:none;"><a href="admin.html"><i class="fas fa-shield-alt"></i> Admin</a></li>
+        </ul>
+    </nav>
+
+    <main class="container contact-page">
+        <div class="contact-header">
+            <h1>Contact Us</h1>
+            <p>We'd love to hear from you. Get in touch with us for any queries.</p>
+        </div>
+
+        <div class="contact-info">
+            <div class="contact-card">
+                <i class="fas fa-phone"></i>
+                <h4>Call Us</h4>
+                <p><a href="tel:7698242215">76982 42215</a></p>
+                <p style="font-size:0.75rem;">Mon-Sat, 10am - 8pm</p>
+            </div>
+            <div class="contact-card">
+                <i class="fas fa-envelope"></i>
+                <h4>Email</h4>
+                <p>info@sweetandsour.com</p>
+                <p style="font-size:0.75rem;">We reply within 24 hours</p>
+            </div>
+            <div class="contact-card">
+                <i class="fas fa-map-pin"></i>
+                <h4>Visit Us</h4>
+                <p>Bhagal Tala Main Road</p>
+                <p style="font-size:0.75rem;">City Masala Exit, Surat</p>
+            </div>
+            <div class="contact-card">
+                <i class="fab fa-whatsapp"></i>
+                <h4>WhatsApp</h4>
+                <p><a href="https://wa.me/917698242215" target="_blank">76982 42215</a></p>
+                <p style="font-size:0.75rem;">Available 24/7</p>
+            </div>
+        </div>
+
+        <div class="contact-grid">
+            <div class="contact-form">
+                <h3>Send Us a Message</h3>
+                <form id="contactForm">
+                    <div class="form-group"><label for="name">Full Name</label><input type="text" id="name" placeholder="Your name" required /></div>
+                    <div class="form-group"><label for="email">Email Address</label><input type="email" id="email" placeholder="your@email.com" required /></div>
+                    <div class="form-group"><label for="subject">Subject</label><input type="text" id="subject" placeholder="Subject" required /></div>
+                    <div class="form-group"><label for="message">Message</label><textarea id="message" placeholder="Your message..." required></textarea></div>
+                    <button type="submit" class="btn-primary">Send Message</button>
+                </form>
+            </div>
+
+            <div style="background:var(--white);border-radius:var(--radius);padding:1.5rem;border:1px solid var(--gray-100);">
+                <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:0.5rem;">📍 Store Location</h3>
+                <p style="color:var(--gray-500);font-size:0.9rem;margin-bottom:0.8rem;">Bhagal Tala Main Road, City Masala Exit, Surat</p>
+                <div style="height:200px;background:var(--gray-100);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;background-image:url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'48\' height=\'48\' viewBox=\'0 0 24 24\' fill=\'%231A8CFF\'%3E%3Cpath d=\'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z\'/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:center;background-size:48px;background-color:#f2f4f7;">
+                    <span style="background:white;padding:0.2rem 1rem;border-radius:var(--radius-full);font-weight:500;font-size:0.9rem;">📍 View on Google Maps</span>
+                </div>
+                <div style="margin-top:0.8rem;font-size:0.85rem;color:var(--gray-500);">
+                    <p><i class="fas fa-clock" style="color:var(--secondary);"></i> 10:00 AM – 10:00 PM · 365 days</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="toast-container" id="toast"></div>
+
+    <nav class="bottom-nav" id="bottomNav">
+        <a href="index.html" class="bottom-nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="categories.html" class="bottom-nav-item"><i class="fas fa-th-large"></i><span>Categories</span></a>
+        <a href="wishlist.html" class="bottom-nav-item"><i class="far fa-heart"></i><span>Wishlist</span><span class="badge-count" id="bottomWishlistBadge">0</span></a>
+        <a href="cart.html" class="bottom-nav-item"><i class="fas fa-shopping-bag"></i><span>Cart</span><span class="badge-count" id="bottomCartBadge">0</span></a>
+        <a href="account.html" class="bottom-nav-item"><i class="far fa-user"></i><span>Account</span></a>
+    </nav>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import { initializeApp } from 'firebase/app';
+        import { getAuth, onAuthStateChanged } from 'firebase/auth';
+        import { getFirestore, doc, getDoc } from 'firebase/firestore';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAfGWLLJ-bmMrbkhLkdwhxIo2QrW7mYKQA",
+            authDomain: "sweet-and-sour-aa364.firebaseapp.com",
+            projectId: "sweet-and-sour-aa364",
+            storageBucket: "sweet-and-sour-aa364.firebasestorage.app",
+            messagingSenderId: "1046434031562",
+            appId: "1:1046434031562:web:b325998964afbfe4105133"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const form = document.getElementById('contactForm');
+        const toast = document.getElementById('toast');
+        const avatarInitial = document.getElementById('avatarInitial');
+        const profileIcon = document.getElementById('profileIcon');
+        const adminNavItem = document.getElementById('adminNavItem');
+
+        let toastTimer = null;
+        let currentUser = null;
+        let userData = null;
+
+        function getCartCount() { try { return (JSON.parse(localStorage.getItem('ss_cart_v1')) || []).reduce((s, i) => s + (i.qty || 1), 0); } catch { return 0; } }
+        function getWishlistCount() { try { return (JSON.parse(localStorage.getItem('ss_wishlist_v1')) || []).length; } catch { return 0; } }
+
+        async function loadUserData(user) {
+            if (!user) { userData = null; currentUser = null; updateProfileAvatar(); updateAdminMenu(); return; }
+            currentUser = user;
+            try {
+                const docRef = doc(db, 'users', user.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) { userData = docSnap.data(); }
+                else { userData = { name: user.displayName || user.email?.split('@')[0] || 'User', role: 'customer' }; }
+            } catch (error) { userData = { name: user.displayName || user.email?.split('@')[0] || 'User', role: 'customer' }; }
+            updateProfileAvatar(); updateAdminMenu();
+        }
+
+        function updateProfileAvatar() {
+            if (!currentUser) { avatarInitial.textContent = 'U'; avatarInitial.className = 'avatar-initial'; profileIcon.href = 'login.html'; return; }
+            profileIcon.href = 'account.html';
+            if (userData && userData.role === 'admin') { avatarInitial.className = 'avatar-initial admin'; avatarInitial.textContent = 'A'; }
+            else if (userData && userData.name) { avatarInitial.className = 'avatar-initial'; avatarInitial.textContent = userData.name.charAt(0).toUpperCase(); }
+            else if (currentUser.displayName) { avatarInitial.className = 'avatar-initial'; avatarInitial.textContent = currentUser.displayName.charAt(0).toUpperCase(); }
+            else if (currentUser.email) { avatarInitial.className = 'avatar-initial'; avatarInitial.textContent = currentUser.email.charAt(0).toUpperCase(); }
+            else { avatarInitial.className = 'avatar-initial'; avatarInitial.textContent = 'U'; }
+        }
+
+        function updateAdminMenu() { adminNavItem.style.display = (currentUser && userData && userData.role === 'admin') ? 'block' : 'none'; }
+
+        function updateBadges() {
+            const wCount = getWishlistCount();
+            const cCount = getCartCount();
+            const wishlistBadge = document.getElementById('wishlistBadge');
+            const cartBadge = document.getElementById('cartBadge');
+            const bottomWishlist = document.getElementById('bottomWishlistBadge');
+            const bottomCart = document.getElementById('bottomCartBadge');
+            if (wCount > 0) { wishlistBadge.textContent = wCount; wishlistBadge.style.display = 'block'; if (bottomWishlist) { bottomWishlist.textContent = wCount; bottomWishlist.style.display = 'block'; } }
+            else { wishlistBadge.style.display = 'none'; if (bottomWishlist) { bottomWishlist.style.display = 'none'; } }
+            if (cCount > 0) { cartBadge.textContent = cCount; cartBadge.style.display = 'block'; if (bottomCart) { bottomCart.textContent = cCount; bottomCart.style.display = 'block'; } }
+            else { cartBadge.style.display = 'none'; if (bottomCart) { bottomCart.style.display = 'none'; } }
+        }
+
+        function showToast(message, type = 'success') {
+            toast.textContent = message;
+            toast.className = `toast-container ${type}`;
+            toast.style.display = 'block';
+            requestAnimationFrame(() => toast.classList.add('show'));
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.style.display = 'none', 400); }, 3000);
+        }
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const subject = document.getElementById('subject').value.trim();
+            const message = document.getElementById('message').value.trim();
+            if (!name || !email || !subject || !message) { showToast('Please fill in all fields', 'error'); return; }
+            showToast('Message sent! We\'ll get back to you soon.', 'success');
+            form.reset();
+        });
+
+        onAuthStateChanged(auth, async (user) => { await loadUserData(user); updateBadges(); });
+        window.addEventListener('storage', updateBadges);
+
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebarDrawer');
+        const overlay = document.getElementById('sidebarOverlay');
+        const closeBtn = document.getElementById('sidebarClose');
+        menuToggle.addEventListener('click', () => { sidebar.classList.add('open'); overlay.classList.add('open'); document.body.style.overflow = 'hidden'; });
+        closeBtn.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = ''; });
+        overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = ''; });
+    </script>
+</body>
+</html>

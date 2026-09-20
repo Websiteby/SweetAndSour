@@ -1,0 +1,23 @@
+User-agent: *
+Allow: /
+Allow: /index.html
+Allow: /categories.html
+Allow: /products.html
+Allow: /product.html
+Allow: /contact.html
+Allow: /login.html
+Allow: /signup.html
+
+Disallow: /admin.html
+Disallow: /admin-*
+Disallow: /account.html
+Disallow: /account-setup.html
+Disallow: /orders.html
+Disallow: /order-details.html
+Disallow: /order-success.html
+Disallow: /cart.html
+Disallow: /checkout.html
+Disallow: /wishlist.html
+Disallow: /forgot-password.html
+
+Sitemap: https://sweetandsour.example.com/sitemap.xml

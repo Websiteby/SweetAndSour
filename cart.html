@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5" />
+    <title>Sweet & Sour · Shopping Cart</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        .cart-page { padding: 1rem 0 2rem; }
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.2rem;
+        }
+        .page-header h1 { font-size: 1.4rem; font-weight: 700; }
+        .page-header h1 i { color: var(--primary-blue); }
+        .page-header .count {
+            background: var(--gray-100);
+            padding: 0.1rem 0.8rem;
+            border-radius: var(--radius-full);
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--gray-600);
+        }
+        .cart-layout { display: grid; grid-template-columns: 1fr; gap: 1.2rem; }
+        .cart-items-section {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 1rem;
+            border: 1px solid var(--gray-100);
+        }
+        .cart-item {
+            display: flex;
+            gap: 0.8rem;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid var(--gray-100);
+            animation: slideIn 0.3s ease;
+            align-items: center;
+        }
+        .cart-item:last-child { border-bottom: none; }
+        @keyframes slideIn {
+            0% { opacity: 0; transform: translateY(-10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .cart-item .item-image {
+            width: 70px;
+            height: 70px;
+            background: var(--gray-100);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .cart-item .item-image img { width: 100%; height: 100%; object-fit: contain; padding: 0.2rem; }
+        .cart-item .item-details { flex: 1; min-width: 0; }
+        .cart-item .item-details .name { font-weight: 600; font-size: 0.9rem; }
+        .cart-item .item-details .category { font-size: 0.65rem; color: var(--gray-500); }
+        .cart-item .item-details .price { font-weight: 700; font-size: 0.95rem; color: var(--primary-blue); }
+        .cart-item .item-details .old-price { font-size: 0.65rem; color: var(--gray-400); text-decoration: line-through; margin-left: 4px; }
+        .cart-item .item-controls { display: flex; flex-direction: column; align-items: flex-end; gap: 0.3rem; }
+        .cart-item .item-controls .qty-control {
+            display: flex;
+            align-items: center;
+            gap: 0.2rem;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-full);
+            padding: 0.05rem 0.05rem;
+        }
+        .cart-item .item-controls .qty-control button {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            transition: var(--transition);
+            background: transparent;
+        }
+        .cart-item .item-controls .qty-control button:hover { background: var(--gray-100); }
+        .cart-item .item-controls .qty-control button:disabled { opacity: 0.3; cursor: not-allowed; }
+        .cart-item .item-controls .qty-control span { min-width: 24px; text-align: center; font-weight: 600; font-size: 0.9rem; }
+        .cart-item .item-controls .item-actions { display: flex; gap: 0.4rem; }
+        .cart-item .item-controls .item-actions button {
+            font-size: 0.65rem;
+            padding: 0.1rem 0.6rem;
+            border-radius: var(--radius-full);
+            background: var(--gray-100);
+            color: var(--gray-600);
+            transition: var(--transition);
+        }
+        .cart-item .item-controls .item-actions button:hover { background: #fee2e2; color: #D32F2F; }
+        .cart-item .item-controls .item-actions .move-wishlist:hover { background: #fef3c7; color: var(--secondary-dark); }
+        .cart-summary {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            border: 1px solid var(--gray-100);
+            position: sticky;
+            top: 80px;
+            height: fit-content;
+        }
+        .cart-summary h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.8rem; }
+        .summary-row { display: flex; justify-content: space-between; padding: 0.3rem 0; font-size: 0.85rem; }
+        .summary-row.total {
+            font-weight: 700;
+            font-size: 1.05rem;
+            border-top: 2px solid var(--gray-200);
+            padding-top: 0.8rem;
+            margin-top: 0.3rem;
+        }
+        .summary-row .discount-amount { color: var(--accent); }
+        .delivery-info { font-size: 0.7rem; color: var(--accent); padding: 0.2rem 0; }
+        .checkout-btn {
+            width: 100%;
+            padding: 0.8rem;
+            background: var(--primary-blue);
+            color: var(--white);
+            border-radius: var(--radius-full);
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-top: 0.8rem;
+            text-align: center;
+            display: block;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+        }
+        .checkout-btn:hover { background: var(--primary-blue-dark); transform: translateY(-2px); box-shadow: var(--shadow-blue); }
+        .checkout-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .toast-container { bottom: 80px; }
+        @media (min-width: 768px) { .cart-layout { grid-template-columns: 2fr 1fr; } .cart-item .item-image { width: 90px; height: 90px; } }
+        @media (max-width: 480px) {
+            .cart-item { flex-wrap: wrap; }
+            .cart-item .item-image { width: 55px; height: 55px; }
+            .cart-item .item-controls { align-items: flex-start; width: 100%; flex-direction: row; justify-content: space-between; }
+        }
+    </style>
+</head>
+<body>
+    <header class="sticky-header">
+        <div class="container">
+            <div class="header-top">
+                <div class="header-left">
+                    <button class="hamburger" id="menuToggle" aria-label="Open menu"><i class="fas fa-bars"></i></button>
+                    <div class="brand-logo-placeholder"><img src="logo.png" alt="Sweet & Sour Logo" id="brandLogo" onerror="this.style.display='none'" /></div>
+                    <span class="brand-name"><span class="brand-sweet">Sweet</span><span class="brand-and">&amp;</span><span class="brand-sour">Sour</span></span>
+                </div>
+                <div class="header-center"></div>
+                <div class="header-right">
+                    <a href="wishlist.html" class="icon-wrap" aria-label="Wishlist"><i class="far fa-heart"></i><span class="badge-count" id="wishlistBadge">0</span></a>
+                    <a href="cart.html" class="icon-wrap" aria-label="Cart"><i class="fas fa-shopping-bag"></i><span class="badge-count" id="cartBadge">0</span></a>
+                    <a href="account.html" class="icon-wrap" id="profileIcon" aria-label="Profile"><div class="profile-avatar" id="profileAvatar"><div class="avatar-initial" id="avatarInitial">U</div></div></a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <nav class="sidebar-drawer" id="sidebarDrawer">
+        <button class="sidebar-close" id="sidebarClose"><i class="fas fa-times"></i></button>
+        <div class="drawer-brand"><span class="brand-sweet">Sweet</span><span class="brand-and">&amp;</span><span class="brand-sour">Sour</span></div>
+        <ul class="drawer-nav">
+            <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="categories.html"><i class="fas fa-th-large"></i> Categories</a></li>
+            <li><a href="wishlist.html"><i class="far fa-heart"></i> Wishlist</a></li>
+            <li><a href="cart.html"><i class="fas fa-shopping-bag"></i> Cart</a></li>
+            <li><a href="account.html"><i class="far fa-user"></i> My Account</a></li>
+            <li><a href="orders.html"><i class="fas fa-shopping-bag"></i> Orders</a></li>
+            <li><a href="contact.html"><i class="fas fa-phone"></i> Contact</a></li>
+            <li id="adminNavItem" style="display:none;"><a href="admin.html"><i class="fas fa-shield-alt"></i> Admin</a></li>
+        </ul>
+    </nav>
+
+    <main class="container cart-page">
+        <div class="page-header">
+            <h1><i class="fas fa-shopping-bag"></i> My Cart</h1>
+            <span class="count" id="cartItemCount">0 items</span>
+        </div>
+        <div id="cartContainer">
+            <div class="cart-items-section">
+                <div class="skeleton-card" style="margin-bottom:0.8rem;"><div class="skeleton-img" style="height:70px;width:70px;float:left;margin-right:0.8rem;"></div><div class="skeleton-line" style="width:60%;"></div><div class="skeleton-line short"></div></div>
+                <div class="skeleton-card"><div class="skeleton-img" style="height:70px;width:70px;float:left;margin-right:0.8rem;"></div><div class="skeleton-line" style="width:60%;"></div><div class="skeleton-line short"></div></div>
+            </div>
+        </div>
+    </main>
+
+    <div class="toast-container" id="toast"></div>
+
+    <nav class="bottom-nav" id="bottomNav">
+        <a href="index.html" class="bottom-nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="categories.html" class="bottom-nav-item"><i class="fas fa-th-large"></i><span>Categories</span></a>
+        <a href="wishlist.html" class="bottom-nav-item"><i class="far fa-heart"></i><span>Wishlist</span><span class="badge-count" id="bottomWishlistBadge">0</span></a>
+        <a href="cart.html" class="bottom-nav-item active"><i class="fas fa-shopping-bag"></i><span>Cart</span><span class="badge-count" id="bottomCartBadge">0</span></a>
+        <a href="account.html" class="bottom-nav-item"><i class="far fa-user"></i><span>Account</span></a>
+    </nav>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import { initializeApp } from 'firebase/app';
+        import { getAuth, onAuthStateChanged } from 'firebase/auth';
+        import { getFirestore, doc, getDoc } from 'firebase/firestore';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAfGWLLJ-bmMrbkhLkdwhxIo2QrW7mYKQA",
+            authDomain: "sweet-and-sour-aa364.firebaseapp.com",
+            projectId: "sweet-and-sour-aa364",
+            storageBucket: "sweet-and-sour-aa364.firebasestorage.app",
+            messagingSenderId: "1046434031562",
+            appId: "1:1046434031562:web:b325998964afbfe4105133"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const container = document.getElementById('cartContainer');
+        const itemCount = document.getElementById('cartItemCount');
+        const toast = document.getElementById('toast');
+        const avatarInitial = document.getElementById('avatarInitial');
+        const profileIcon = document.getElementById('profileIcon');
+        const adminNavItem = document.getElementById('adminNavItem');
+
+        let toastTimer = null;
+        let currentUser = null;
+        let userData = null;
+
+        function getCart() { try { return JSON.parse(localStorage.getItem('ss_cart_v1')) || []; } catch { return []; } }
+        function saveCart(cart) { localStorage.setItem('ss_cart_v1', JSON.stringify(cart)); }
+        function getWishlist() { try { return JSON.parse(localStorage.getItem('ss_wishlist_v1')) || []; } catch { return []; } }
+        function saveWishlist(wishlist) { localStorage.setItem('ss_wishlist_v1', JSON.stringify(wishlist)); }
+
+        async function loadUserData(user) {
+            if (!user) { userData = null; currentUser = null; updateProfileAvatar(); updateAdminMenu(); return; }
+            currentUser = user;
+            try {
+                const docRef = doc(db, 'users', user.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) { userData = docSnap.data(); } else { userData = { name: user.displayName || user.email?.split('@')[0] || 'User', role: 'customer' }; }
+            } catch (error) { userData = { name: user.displayName || user.email?.split('@')[0] || 'User', role: 'customer' }; }
+            updateProfileAvatar(); updateAdminMenu();
+        }
+
+        function updateProfileAvatar() {
+            if (!currentUser) { avatarInitial.textContent = 'U'; avatarInitial.className = 'avatar-initial'; profileIcon.href = 'login.html'; return; }
+            profileIcon.href = 'account.html';
+            if (userData && userData.role === 'admin') { avatarInitial.className = 'avatar-initial admin'; avatarInitial.textContent = 'A'; }
+            else if (userData && userData.name) { avatarInitial.className = 'avatar-initial'; avatarInitial.textContent = userData.name.charAt(0).toUpperCase(); }
+            else if (currentUser.displayName) { avatarInitial.className = 'avatar-initial'; avatarInitial.textContent = currentUser.displayName.charAt(0).toUpperCase(); }
+            else if (currentUser.email) { avatarInitial.className = 'avatar-initial'; avatarInitial.textContent = currentUser.email.charAt(0).toUpperCase(); }
+            else { avatarInitial.className = 'avatar-initial'; avatarInitial.textContent = 'U'; }
+        }
+
+        function updateAdminMenu() { adminNavItem.style.display = (currentUser && userData && userData.role === 'admin') ? 'block' : 'none'; }
+
+        function showToast(message, type = 'success') {
+            toast.textContent = message;
+            toast.className = `toast-container ${type}`;
+            toast.style.display = 'block';
+            requestAnimationFrame(() => toast.classList.add('show'));
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.style.display = 'none', 400); }, 3000);
+        }
+
+        function updateBadges() {
+            const cart = getCart();
+            const wishlist = getWishlist();
+            const cCount = cart.reduce((sum, item) => sum + (item.qty || 1), 0);
+            const wCount = wishlist.length;
+            const wishlistBadge = document.getElementById('wishlistBadge');
+            const cartBadge = document.getElementById('cartBadge');
+            const bottomWishlist = document.getElementById('bottomWishlistBadge');
+            const bottomCart = document.getElementById('bottomCartBadge');
+            if (wCount > 0) { wishlistBadge.textContent = wCount; wishlistBadge.style.display = 'block'; if (bottomWishlist) { bottomWishlist.textContent = wCount; bottomWishlist.style.display = 'block'; } }
+            else { wishlistBadge.style.display = 'none'; if (bottomWishlist) { bottomWishlist.style.display = 'none'; } }
+            if (cCount > 0) { cartBadge.textContent = cCount; cartBadge.style.display = 'block'; if (bottomCart) { bottomCart.textContent = cCount; bottomCart.style.display = 'block'; } }
+            else { cartBadge.style.display = 'none'; if (bottomCart) { bottomCart.style.display = 'none'; } }
+        }
+
+        function renderCart() {
+            const cart = getCart();
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-shopping-bag"></i>
+                        <h3>Your Cart is Empty</h3>
+                        <p>Looks like you haven't added anything yet.</p>
+                        <a href="products.html" class="btn-primary">Start Shopping</a>
+                    </div>
+                `;
+                itemCount.textContent = '0 items';
+                updateBadges();
+                return;
+            }
+
+            let subtotal = 0;
+            let totalDiscount = 0;
+            let html = `<div class="cart-layout"><div class="cart-items-section">`;
+
+            cart.forEach((item, index) => {
+                const price = item.price || 0;
+                const qty = item.qty || 1;
+                const oldPrice = item.oldPrice || price;
+                const itemDiscount = Math.max(0, (oldPrice - price) * qty);
+                subtotal += price * qty;
+                totalDiscount += itemDiscount;
+
+                html += `
+                    <div class="cart-item" data-id="${item.id}" data-index="${index}">
+                        <div class="item-image"><img src="${item.image || 'placeholder-product.jpg'}" alt="${item.name}" loading="lazy" onerror="this.src='placeholder-product.jpg'" /></div>
+                        <div class="item-details">
+                            <div class="name">${item.name}</div>
+                            <div class="category">${item.category || 'Product'}${item.sku ? ' · ' + item.sku : ''}</div>
+                            <div>
+                                <span class="price">₹${price}</span>
+                                ${oldPrice > price ? `<span class="old-price">₹${oldPrice}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="item-controls">
+                            <div class="qty-control">
+                                <button class="qty-btn" data-id="${item.id}" data-action="decrease" ${qty <= 1 ? 'disabled' : ''} aria-label="Decrease quantity"><i class="fas fa-minus"></i></button>
+                                <span>${qty}</span>
+                                <button class="qty-btn" data-id="${item.id}" data-action="increase" aria-label="Increase quantity"><i class="fas fa-plus"></i></button>
+                            </div>
+                            <div class="item-actions">
+                                <button class="move-wishlist" data-id="${item.id}"><i class="far fa-heart"></i> Move</button>
+                                <button class="remove-btn" data-id="${item.id}" aria-label="Remove"><i class="fas fa-trash-alt"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            const delivery = subtotal >= 499 ? 0 : 49;
+            const total = subtotal - totalDiscount + delivery;
+
+            html += `
+                </div>
+                <div class="cart-summary">
+                    <h3>Order Summary</h3>
+                    <div class="summary-row"><span>Subtotal</span><span>₹${subtotal}</span></div>
+                    ${totalDiscount > 0 ? `<div class="summary-row"><span>Discount</span><span class="discount-amount">-₹${totalDiscount}</span></div>` : ''}
+                    <div class="summary-row"><span>Delivery</span><span>${delivery === 0 ? 'FREE' : '₹'+delivery}</span></div>
+                    ${delivery > 0 ? `<div class="delivery-info">🛒 Add ₹${499 - subtotal} more for FREE delivery</div>` : `<div class="delivery-info">🎉 You unlocked FREE delivery</div>`}
+                    <div class="summary-row total"><span>Total</span><span>₹${total}</span></div>
+                    <button class="checkout-btn" ${cart.length === 0 ? 'disabled' : ''}>Proceed to Checkout</button>
+                </div>
+            `;
+
+            container.innerHTML = html;
+            const count = cart.reduce((sum, item) => sum + (item.qty || 1), 0);
+            itemCount.textContent = `${cart.length} items (${count} units)`;
+
+            container.querySelectorAll('.qty-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    updateQuantity(this.dataset.id, this.dataset.action);
+                });
+            });
+            container.querySelectorAll('.remove-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) { e.stopPropagation(); removeFromCart(this.dataset.id); });
+            });
+            container.querySelectorAll('.move-wishlist').forEach(btn => {
+                btn.addEventListener('click', function(e) { e.stopPropagation(); moveToWishlist(this.dataset.id); });
+            });
+            container.querySelector('.checkout-btn')?.addEventListener('click', function() { if (!this.disabled) window.location.href = 'checkout.html'; });
+            container.querySelectorAll('.cart-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    if (e.target.closest('button')) return;
+                    window.location.href = `product.html?id=${this.dataset.id}`;
+                });
+            });
+
+            updateBadges();
+        }
+
+        function updateQuantity(productId, action) {
+            const cart = getCart();
+            const item = cart.find(i => i.id === productId);
+            if (!item) return;
+            let newQty = item.qty || 1;
+            if (action === 'increase') newQty += 1;
+            else if (action === 'decrease') { newQty -= 1; if (newQty < 1) { removeFromCart(productId); return; } }
+            item.qty = newQty;
+            saveCart(cart);
+            renderCart();
+        }
+
+        function removeFromCart(productId) {
+            const cart = getCart();
+            saveCart(cart.filter(i => i.id !== productId));
+            renderCart();
+            showToast('Removed from cart', 'success');
+        }
+
+        function moveToWishlist(productId) {
+            const cart = getCart();
+            const item = cart.find(i => i.id === productId);
+            if (!item) return;
+            const wishlist = getWishlist();
+            if (!wishlist.includes(productId)) { wishlist.push(productId); saveWishlist(wishlist); }
+            saveCart(cart.filter(i => i.id !== productId));
+            renderCart();
+            showToast('Moved to wishlist', 'success');
+        }
+
+        onAuthStateChanged(auth, async (user) => { await loadUserData(user); renderCart(); });
+        window.addEventListener('storage', (e) => { if (e.key === 'ss_cart_v1' || e.key === 'ss_wishlist_v1') renderCart(); });
+
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebarDrawer');
+        const overlay = document.getElementById('sidebarOverlay');
+        const closeBtn = document.getElementById('sidebarClose');
+        menuToggle.addEventListener('click', () => { sidebar.classList.add('open'); overlay.classList.add('open'); document.body.style.overflow = 'hidden'; });
+        closeBtn.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = ''; });
+        overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = ''; });
+    </script>
+</body>
+</html>

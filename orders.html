@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5" />
+    <title>Sweet & Sour · My Orders</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        .orders-page { padding: 1rem 0 2rem; }
+        .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; }
+        .page-header h1 { font-size: 1.4rem; font-weight: 700; }
+        .page-header h1 i { color: var(--primary-blue); }
+        .order-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 1rem;
+            border: 1px solid var(--gray-100);
+            margin-bottom: 0.8rem;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+        .order-card:hover { border-color: var(--primary-blue); box-shadow: var(--shadow); transform: translateY(-2px); }
+        .order-card .order-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 0.5rem; }
+        .order-card .order-header .order-id { font-weight: 600; font-size: 0.9rem; }
+        .order-card .order-header .order-date { font-size: 0.8rem; color: var(--gray-500); }
+        .order-card .order-items { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+        .order-card .order-items .item-thumb { width: 50px; height: 50px; background: var(--gray-100); border-radius: var(--radius-sm); overflow: hidden; }
+        .order-card .order-items .item-thumb img { width: 100%; height: 100%; object-fit: contain; }
+        .order-card .order-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.6rem;
+            padding-top: 0.6rem;
+            border-top: 1px solid var(--gray-100);
+        }
+        .order-card .order-footer .total { font-weight: 700; font-size: 1rem; color: var(--primary-blue); }
+        .order-card .order-footer .status-badge { padding: 0.15rem 0.8rem; border-radius: var(--radius-full); font-size: 0.7rem; font-weight: 600; }
+        .status-badge.pending { background: #FEF3C7; color: #92400E; }
+        .status-badge.dispatched { background: #DBEAFE; color: #1E40AF; }
+        .status-badge.delivered { background: #D1FAE5; color: #065F46; }
+        .status-badge.cancelled { background: #FEE2E2; color: #991B1B; }
+        .empty-orders { text-align: center; padding: 2.5rem 1rem; }
+        .empty-orders i { font-size: 4rem; color: var(--gray-300); margin-bottom: 1rem; }
+        .empty-orders h3 { font-size: 1.2rem; font-weight: 700; }
+        .empty-orders p { color: var(--gray-500); margin-bottom: 1.2rem; }
+        .toast-container { bottom: 80px; }
+        .order-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.2rem; overflow-x: auto; padding-bottom: 0.3rem; }
+        .order-tabs button {
+            padding: 0.4rem 1.2rem;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            font-size: 0.8rem;
+            background: var(--gray-100);
+            color: var(--gray-600);
+            transition: var(--transition);
+            white-space: nowrap;
+            border: none;
+            cursor: pointer;
+        }
+        .order-tabs button.active { background: var(--primary-blue); color: var(--white); }
+        .order-tabs button:hover:not(.active) { background: var(--gray-200); }
+        .track-order-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-top: 0.8rem;
+            padding: 0.4rem 1rem;
+            background: var(--primary-blue-light);
+            color: var(--primary-blue);
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            font-size: 0.8rem;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .track-order-btn:hover { background: var(--primary-blue); color: var(--white); }
+    </style>
+</head>
+<body>
+    <header class="sticky-header">
+        <div class="container">
+            <div class="header-top">
+                <div class="header-left">
+                    <button class="hamburger" id="menuToggle" aria-label="Open menu"><i class="fas fa-bars"></i></button>
+                </div>
+                <div class="header-center">
+                    <div class="brand-logo-placeholder">
+                        <img src="logo.png" alt="Sweet & Sour Logo" id="brandLogo" onerror="this.style.display='none'" />
+                    </div>
+                </div>
+                <div class="header-right">
+                    <a href="account.html" class="icon-wrap account-icon" id="profileIcon" aria-label="Profile">
+                        <div class="profile-avatar" id="profileAvatar">
+                            <div class="avatar-initial" id="avatarInitial">U</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <nav class="sidebar-drawer" id="sidebarDrawer">
+        <button class="sidebar-close" id="sidebarClose"><i class="fas fa-times"></i></button>
+        <div class="drawer-brand"><span class="brand-sweet">Sweet</span><span class="brand-and">&amp;</span><span class="brand-sour">Sour</span></div>
+        <ul class="drawer-nav">
+            <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="categories.html"><i class="fas fa-th-large"></i> Categories</a></li>
+            <li><a href="wishlist.html"><i class="far fa-heart"></i> Wishlist</a></li>
+            <li><a href="cart.html"><i class="fas fa-shopping-bag"></i> Cart</a></li>
+            <li><a href="account.html"><i class="far fa-user"></i> My Account</a></li>
+            <li><a href="orders.html"><i class="fas fa-shopping-bag"></i> Orders</a></li>
+            <li><a href="contact.html"><i class="fas fa-phone"></i> Contact</a></li>
+            <li id="adminNavItem" style="display:none;"><a href="admin.html"><i class="fas fa-shield-alt"></i> Admin</a></li>
+        </ul>
+    </nav>
+
+    <main class="container orders-page">
+        <div class="page-header">
+            <h1><i class="fas fa-shopping-bag"></i> My Orders</h1>
+        </div>
+
+        <div class="order-tabs" id="orderTabs">
+            <button class="active" data-status="all">All</button>
+            <button data-status="pending">Pending</button>
+            <button data-status="dispatched">Dispatched</button>
+            <button data-status="delivered">Delivered</button>
+            <button data-status="cancelled">Cancelled</button>
+        </div>
+
+        <div id="ordersContainer">
+            <div class="skeleton-card" style="margin-bottom:0.8rem;"><div class="skeleton-line medium"></div><div class="skeleton-line short"></div></div>
+            <div class="skeleton-card"><div class="skeleton-line medium"></div><div class="skeleton-line short"></div></div>
+        </div>
+
+        <div style="text-align:center;margin-top:1.5rem;">
+            <button class="track-order-btn" id="trackOrderBtn"><i class="fas fa-search"></i> Track Order by Order ID</button>
+        </div>
+    </main>
+
+    <div class="toast-container" id="toast"></div>
+
+    <nav class="bottom-nav" id="bottomNav">
+        <a href="index.html" class="bottom-nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="categories.html" class="bottom-nav-item"><i class="fas fa-th-large"></i><span>Categories</span></a>
+        <a href="wishlist.html" class="bottom-nav-item"><i class="far fa-heart"></i><span>Wishlist</span><span class="badge-count" id="bottomWishlistBadge">0</span></a>
+        <a href="cart.html" class="bottom-nav-item"><i class="fas fa-shopping-bag"></i><span>Cart</span><span class="badge-count" id="bottomCartBadge">0</span></a>
+        <a href="account.html" class="bottom-nav-item"><i class="far fa-user"></i><span>Account</span></a>
+    </nav>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import {
+            auth, db,
+            onAuthStateChanged,
+            doc, getDoc, collection, query, where, getDocs
+        } from './firebase-config.js';
+
+        const container = document.getElementById('ordersContainer');
+        const toast = document.getElementById('toast');
+        const avatarInitial = document.getElementById('avatarInitial');
+        const profileIcon = document.getElementById('profileIcon');
+        const adminNavItem = document.getElementById('adminNavItem');
+
+        let toastTimer = null;
+        let currentUser = null;
+        let userData = null;
+        let currentStatus = 'all';
+        let orders = [];
+
+        function getCartCount() { try { return (JSON.parse(localStorage.getItem('ss_cart_v1')) || []).reduce((s, i) => s + (i.qty || 1), 0); } catch { return 0; } }
+        function getWishlistCount() { try { return (JSON.parse(localStorage.getItem('ss_wishlist_v1')) || []).length; } catch { return 0; } }
+
+        async function loadUserData(user) {
+            if (!user) { userData = null; currentUser = null; updateProfileAvatar(); updateAdminMenu(); return; }
+            currentUser = user;
+            try {
+                const docRef = doc(db, 'users', user.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) { userData = docSnap.data(); }
+                else { userData = { name: user.displayName || user.email?.split('@')[0] || 'User', role: 'customer' }; }
+            } catch (error) { userData = { name: user.displayName || user.email?.split('@')[0] || 'User', role: 'customer' }; }
+            updateProfileAvatar(); updateAdminMenu();
+        }
+
+        function updateProfileAvatar() {
+            if (!currentUser) { avatarInitial.textContent = 'U'; avatarInitial.className = 'avatar-initial'; profileIcon.href = 'login.html'; return; }
+            profileIcon.href = 'account.html';
+            if (userData && userData.role === 'admin') { avatarInitial.className = 'avatar-initial admin'; avatarInitial.textContent = 'A'; }
+            else if (userData && userData.name) { avatarInitial.className = 'avatar-initial'; avatarInitial.textContent = userData.name.charAt(0).toUpperCase(); }
+            else if (currentUser.displayName) { avatarInitial.className = 'avatar-initial'; avatarInitial.textContent = currentUser.displayName.charAt(0).toUpperCase(); }
+            else if (currentUser.email) { avatarInitial.className = 'avatar-initial'; avatarInitial.textContent = currentUser.email.charAt(0).toUpperCase(); }
+            else { avatarInitial.className = 'avatar-initial'; avatarInitial.textContent = 'U'; }
+        }
+
+        function updateAdminMenu() { adminNavItem.style.display = (currentUser && userData && userData.role === 'admin') ? 'block' : 'none'; }
+
+        function updateBadges() {
+            const wCount = getWishlistCount();
+            const cCount = getCartCount();
+            const wishlistBadge = document.getElementById('wishlistBadge');
+            const cartBadge = document.getElementById('cartBadge');
+            const bottomWishlist = document.getElementById('bottomWishlistBadge');
+            const bottomCart = document.getElementById('bottomCartBadge');
+            if (wCount > 0) { if (wishlistBadge) { wishlistBadge.textContent = wCount; wishlistBadge.style.display = 'block'; } if (bottomWishlist) { bottomWishlist.textContent = wCount; bottomWishlist.style.display = 'block'; } }
+            else { if (wishlistBadge) wishlistBadge.style.display = 'none'; if (bottomWishlist) bottomWishlist.style.display = 'none'; }
+            if (cCount > 0) { if (cartBadge) { cartBadge.textContent = cCount; cartBadge.style.display = 'block'; } if (bottomCart) { bottomCart.textContent = cCount; bottomCart.style.display = 'block'; } }
+            else { if (cartBadge) cartBadge.style.display = 'none'; if (bottomCart) bottomCart.style.display = 'none'; }
+        }
+
+        function showToast(message, type = 'success') {
+            toast.textContent = message;
+            toast.className = `toast-container ${type}`;
+            toast.style.display = 'block';
+            requestAnimationFrame(() => toast.classList.add('show'));
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.style.display = 'none', 400); }, 3000);
+        }
+
+        function renderOrders() {
+            if (orders.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-orders">
+                        <i class="fas fa-shopping-bag"></i>
+                        <h3>No Orders Found</h3>
+                        <p>You haven't placed any orders yet.</p>
+                        <a href="products.html" class="btn-primary">Start Shopping</a>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            orders.forEach(order => {
+                const date = order.date ? new Date(order.date) : new Date();
+                const items = order.items || [];
+                const statusClass = order.status || 'pending';
+                const statusText = statusClass.charAt(0).toUpperCase() + statusClass.slice(1);
+                html += `
+                    <div class="order-card" onclick="window.location.href='order-details.html?id=${order.id}'">
+                        <div class="order-header">
+                            <span class="order-id">Order #${order.id}</span>
+                            <span class="order-date">${date.toLocaleDateString()} ${date.toLocaleTimeString()}</span>
+                        </div>
+                        <div class="order-items">
+                            ${items.slice(0, 4).map(item => `
+                                <div class="item-thumb"><img src="${item.image || 'placeholder-product.jpg'}" alt="${item.name}" loading="lazy" onerror="this.src='placeholder-product.jpg'" /></div>
+                            `).join('')}
+                            ${items.length > 4 ? `<span style="font-size:0.8rem;color:var(--gray-500);display:flex;align-items:center;">+${items.length - 4} more</span>` : ''}
+                        </div>
+                        <div class="order-footer">
+                            <span class="total">₹${order.total || 0}</span>
+                            <span class="status-badge ${statusClass}">${statusText}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        async function loadOrdersFromFirestore() {
+            if (!currentUser) return [];
+            try {
+                const q = query(
+                    collection(db, 'orders'),
+                    where('customerId', '==', currentUser.uid)
+                );
+                const snap = await getDocs(q);
+                const firestoreOrders = [];
+                snap.forEach(doc => {
+                    firestoreOrders.push({ id: doc.id, ...doc.data() });
+                });
+                // Merge with local orders (avoid duplicates)
+                const localOrders = JSON.parse(localStorage.getItem('ss_orders_v1')) || [];
+                const merged = [...firestoreOrders];
+                localOrders.forEach(lo => {
+                    if (!merged.find(o => o.id === lo.id)) {
+                        merged.push(lo);
+                    }
+                });
+                merged.sort((a, b) => {
+                    const da = a.createdAt?.toDate?.() || a.date || 0;
+                    const db_ = b.createdAt?.toDate?.() || b.date || 0;
+                    return new Date(db_) - new Date(da);
+                });
+                return merged;
+            } catch (error) {
+                console.warn('Could not load orders from Firestore:', error.message);
+                return [];
+            }
+        }
+
+        async function loadOrders() {
+            let allOrders = await loadOrdersFromFirestore();
+            if (currentStatus !== 'all') orders = allOrders.filter(o => o.status === currentStatus);
+            else orders = allOrders;
+            renderOrders();
+        }
+
+        // Track Order Modal
+        document.getElementById('trackOrderBtn')?.addEventListener('click', () => {
+            // Simple prompt-based tracking (can be enhanced)
+            const orderId = prompt('Enter your Order ID (e.g., SS12345678):');
+            if (!orderId) return;
+            const trimmed = orderId.trim().toUpperCase();
+            if (!trimmed) return;
+            try {
+                const localOrders = JSON.parse(localStorage.getItem('ss_orders_v1')) || [];
+                const found = localOrders.find(o => o.id.toUpperCase() === trimmed);
+                if (found) {
+                    window.location.href = `order-details.html?id=${found.id}`;
+                } else {
+                    showToast('Order not found. Please check your Order ID.', 'error');
+                }
+            } catch {
+                showToast('Order not found.', 'error');
+            }
+        });
+
+        window.addEventListener('storage', (e) => { if (e.key === 'ss_orders_v1') loadOrders(); });
+
+        document.querySelectorAll('.order-tabs button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.order-tabs button').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentStatus = this.dataset.status;
+                loadOrders();
+            });
+        });
+
+        onAuthStateChanged(auth, async (user) => {
+            await loadUserData(user);
+            if (user) { await loadOrders(); updateBadges(); }
+            else {
+                container.innerHTML = `
+                    <div class="empty-orders">
+                        <i class="fas fa-lock"></i>
+                        <h3>Please Login</h3>
+                        <p>Login to view your orders.</p>
+                        <a href="login.html" class="btn-primary">Login</a>
+                    </div>
+                `;
+                updateBadges();
+            }
+        });
+
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebarDrawer');
+        const overlay = document.getElementById('sidebarOverlay');
+        const closeBtn = document.getElementById('sidebarClose');
+        menuToggle.addEventListener('click', () => { sidebar.classList.add('open'); overlay.classList.add('open'); document.body.style.overflow = 'hidden'; });
+        closeBtn.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = ''; });
+        overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); document.body.style.overflow = ''; });
+    </script>
+</body>
+</html>

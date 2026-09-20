@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sweet & Sour · Create Account</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        .auth-card .brand h2 span { color: var(--primary-blue); }
+        .terms { font-size: 0.7rem; color: var(--gray-500); text-align: center; margin-top: 0.4rem; }
+        .terms a { color: var(--primary-blue); }
+    </style>
+</head>
+<body>
+    <div class="auth-page">
+        <div class="auth-card">
+            <div class="brand">
+                <img src="logo.png" alt="Sweet & Sour" class="logo" onerror="this.style.display='none'" />
+                <h2>Sweet <span>&amp;</span> Sour</h2>
+                <p>Create your account</p>
+            </div>
+
+            <form id="signupForm" novalidate>
+                <div class="form-row">
+                    <div class="form-group"><label for="firstName">First Name</label><input type="text" id="firstName" placeholder="John" required /></div>
+                    <div class="form-group"><label for="lastName">Last Name</label><input type="text" id="lastName" placeholder="Doe" required /></div>
+                </div>
+                <div class="form-group"><label for="email">Email Address</label><input type="email" id="email" placeholder="your@email.com" required /></div>
+                <div class="form-group"><label for="phone">Phone Number</label><input type="tel" id="phone" placeholder="+91 9876543210" /></div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Min 6 characters" required minlength="6" />
+                    <div class="password-strength" id="passwordStrength">
+                        <span class="bar" id="pwBar1"></span><span class="bar" id="pwBar2"></span>
+                        <span class="bar" id="pwBar3"></span><span class="bar" id="pwBar4"></span>
+                    </div>
+                    <div class="password-hint" id="passwordHint">Use 6+ characters with letters and numbers</div>
+                </div>
+                <div class="form-group"><label for="confirmPassword">Confirm Password</label><input type="password" id="confirmPassword" placeholder="Confirm password" required /></div>
+                <button type="submit" class="auth-btn" id="signupBtn">
+                    <span class="spinner"></span>
+                    <span class="btn-text">Create Account</span>
+                </button>
+            </form>
+
+            <div class="divider">or continue with</div>
+
+            <button class="btn-google" id="googleSignupBtn">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+                Continue with Google
+            </button>
+
+            <div class="terms">By creating an account, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.</div>
+
+            <div class="auth-footer">Already have an account? <a href="login.html">Sign In</a></div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toast"></div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import { initializeApp } from 'firebase/app';
+        import { getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, updateProfile } from 'firebase/auth';
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, Timestamp } from 'firebase/firestore';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAfGWLLJ-bmMrbkhLkdwhxIo2QrW7mYKQA",
+            authDomain: "sweet-and-sour-aa364.firebaseapp.com",
+            projectId: "sweet-and-sour-aa364",
+            storageBucket: "sweet-and-sour-aa364.firebasestorage.app",
+            messagingSenderId: "1046434031562",
+            appId: "1:1046434031562:web:b325998964afbfe4105133"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        const form = document.getElementById('signupForm');
+        const signupBtn = document.getElementById('signupBtn');
+        const toast = document.getElementById('toast');
+        const googleBtn = document.getElementById('googleSignupBtn');
+        const passwordInput = document.getElementById('password');
+        const confirmInput = document.getElementById('confirmPassword');
+        const passwordHint = document.getElementById('passwordHint');
+        let toastTimer = null;
+
+        function showToast(message, type = 'error') {
+            toast.textContent = message;
+            toast.className = `toast-container ${type}`;
+            toast.style.display = 'block';
+            requestAnimationFrame(() => toast.classList.add('show'));
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.style.display = 'none', 400); }, 3000);
+        }
+
+        function setLoading(loading) {
+            if (loading) { signupBtn.classList.add('btn-loading'); signupBtn.disabled = true; }
+            else { signupBtn.classList.remove('btn-loading'); signupBtn.disabled = false; }
+        }
+
+        function checkPasswordStrength(password) {
+            let score = 0;
+            if (password.length >= 6) score++;
+            if (password.length >= 10) score++;
+            if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score++;
+            if (/[0-9]/.test(password) || /[^A-Za-z0-9]/.test(password)) score++;
+            return score;
+        }
+
+        function updatePasswordStrength() {
+            const password = passwordInput.value;
+            const score = checkPasswordStrength(password);
+            const bars = document.querySelectorAll('#passwordStrength .bar');
+            bars.forEach((bar, index) => {
+                bar.className = 'bar';
+                if (index < score) {
+                    if (score <= 1) bar.classList.add('weak');
+                    else if (score <= 2) bar.classList.add('medium');
+                    else bar.classList.add('strong');
+                }
+            });
+            if (password.length === 0) { passwordHint.textContent = 'Use 6+ characters with letters and numbers'; passwordHint.style.color = 'var(--gray-400)'; }
+            else if (score <= 1) { passwordHint.textContent = 'Weak password - add more characters'; passwordHint.style.color = '#D32F2F'; }
+            else if (score <= 2) { passwordHint.textContent = 'Medium password - add uppercase and numbers'; passwordHint.style.color = '#F59E0B'; }
+            else { passwordHint.textContent = 'Strong password!'; passwordHint.style.color = 'var(--accent)'; }
+        }
+
+        passwordInput.addEventListener('input', updatePasswordStrength);
+
+        confirmInput.addEventListener('input', function() {
+            if (this.value.length > 0 && this.value !== passwordInput.value) this.style.borderColor = '#D32F2F';
+            else if (this.value.length > 0) this.style.borderColor = 'var(--accent)';
+            else this.style.borderColor = 'var(--gray-200)';
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const password = passwordInput.value;
+            const confirmPassword = confirmInput.value;
+
+            if (!firstName || !lastName) { showToast('Please enter your full name', 'error'); return; }
+            if (!email || !email.includes('@')) { showToast('Please enter a valid email address', 'error'); return; }
+            if (password.length < 6) { showToast('Password must be at least 6 characters', 'error'); return; }
+            if (password !== confirmPassword) { showToast('Passwords do not match', 'error'); return; }
+
+            setLoading(true);
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                await updateProfile(user, { displayName: `${firstName} ${lastName}` });
+                await setDoc(doc(db, 'users', user.uid), {
+                    uid: user.uid,
+                    email: user.email,
+                    name: `${firstName} ${lastName}`,
+                    firstName: firstName,
+                    lastName: lastName,
+                    phone: phone || '',
+                    role: 'customer',
+                    status: 'active',
+                    profileComplete: false,
+                    emailVerified: user.emailVerified || false,
+                    createdAt: Timestamp.now(),
+                    updatedAt: Timestamp.now()
+                });
+                showToast('Account created! Please complete your profile.', 'success');
+                setTimeout(() => { window.location.href = 'account-setup.html'; }, 800);
+            } catch (error) {
+                let message = 'Signup failed. Please try again.';
+                if (error.code === 'auth/email-already-in-use') message = 'This email is already registered.';
+                else if (error.code === 'auth/invalid-email') message = 'Invalid email address.';
+                else if (error.code === 'auth/weak-password') message = 'Password is too weak.';
+                showToast(message, 'error');
+                setLoading(false);
+            }
+        });
+
+        googleBtn.addEventListener('click', async () => {
+            googleBtn.disabled = true;
+            googleBtn.style.opacity = '0.6';
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                const userDocRef = doc(db, 'users', user.uid);
+                const userDoc = await getDoc(userDocRef);
+                if (!userDoc.exists()) {
+                    await setDoc(userDocRef, {
+                        uid: user.uid,
+                        email: user.email,
+                        name: user.displayName || user.email?.split('@')[0] || 'User',
+                        firstName: user.displayName?.split(' ')[0] || '',
+                        lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
+                        phone: user.phoneNumber || '',
+                        role: 'customer',
+                        status: 'active',
+                        profileComplete: false,
+                        emailVerified: user.emailVerified || false,
+                        createdAt: Timestamp.now(),
+                        updatedAt: Timestamp.now()
+                    });
+                    showToast('Google sign up successful! Please complete your profile.', 'success');
+                    setTimeout(() => { window.location.href = 'account-setup.html'; }, 800);
+                } else {
+                    const existingData = userDoc.data();
+                    await updateDoc(userDocRef, {
+                        name: user.displayName || existingData.name || 'User',
+                        email: user.email,
+                        phone: user.phoneNumber || existingData.phone || '',
+                        updatedAt: Timestamp.now()
+                    });
+                    if (existingData.profileComplete !== true) {
+                        setTimeout(() => { window.location.href = 'account-setup.html'; }, 500);
+                    } else {
+                        showToast('Welcome back!', 'success');
+                        setTimeout(() => { window.location.href = 'index.html'; }, 500);
+                    }
+                }
+            } catch (error) {
+                let message = 'Google sign up failed. Please try again.';
+                if (error.code === 'auth/popup-closed-by-user') message = 'Popup was closed.';
+                else if (error.code === 'auth/account-exists-with-different-credential') message = 'Account already exists with this email.';
+                showToast(message, 'error');
+            } finally {
+                googleBtn.disabled = false;
+                googleBtn.style.opacity = '1';
+            }
+        });
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    const docRef = doc(db, 'users', user.uid);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        if (data.profileComplete === true) window.location.href = 'index.html';
+                        else window.location.href = 'account-setup.html';
+                    }
+                } catch (error) { console.error(error); }
+            }
+        });
+    </script>
+</body>
+</html>

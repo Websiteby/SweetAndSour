@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5" />
+    <title>Sweet & Sour · Checkout</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        .checkout-page { padding: 1rem 0 2rem; }
+        .checkout-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+        .checkout-header .back-link { color: var(--gray-500); font-size: 1.2rem; }
+        .checkout-header .back-link:hover { color: var(--primary-blue); }
+        .checkout-header h1 { font-size: 1.4rem; font-weight: 700; }
+        .checkout-layout { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+        .checkout-left { display: flex; flex-direction: column; gap: 1.5rem; }
+        .checkout-section { background: var(--white); border-radius: var(--radius); padding: 1.2rem; border: 1px solid var(--gray-100); }
+        .checkout-section .section-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem; }
+        .checkout-section .section-title i { color: var(--primary-blue); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+        .checkout-summary {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            border: 1px solid var(--gray-100);
+            position: sticky;
+            top: 80px;
+            height: fit-content;
+        }
+        .checkout-summary h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.8rem; }
+        .checkout-summary .summary-item { display: flex; justify-content: space-between; padding: 0.3rem 0; font-size: 0.9rem; }
+        .checkout-summary .summary-item.total { font-weight: 700; font-size: 1.1rem; border-top: 2px solid var(--gray-200); padding-top: 0.8rem; margin-top: 0.4rem; color: var(--primary-blue); }
+        .checkout-summary .summary-items { max-height: 280px; overflow-y: auto; }
+        .checkout-summary .summary-items .checkout-item {
+            display: flex;
+            gap: 0.6rem;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid var(--gray-50);
+            align-items: center;
+        }
+        .checkout-summary .summary-items .checkout-item:last-child { border-bottom: none; }
+        .checkout-summary .summary-items .checkout-item .item-img {
+            width: 50px;
+            height: 50px;
+            background: var(--gray-100);
+            border-radius: 6px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .checkout-summary .summary-items .checkout-item .item-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 2px;
+        }
+        .checkout-summary .summary-items .checkout-item .item-info { flex: 1; min-width: 0; }
+        .checkout-summary .summary-items .checkout-item .item-info .item-name {
+            font-weight: 600;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .checkout-summary .summary-items .checkout-item .item-info .item-meta {
+            font-size: 0.65rem;
+            color: var(--gray-500);
+        }
+        .checkout-summary .summary-items .checkout-item .item-price {
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--primary-blue);
+            white-space: nowrap;
+        }
+        .delivery-note {
+            background: #FFF8E1;
+            border-left: 3px solid #F59E0B;
+            padding: 0.6rem 0.8rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            color: #92400E;
+            margin: 0.5rem 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        .delivery-note i { color: #F59E0B; margin-top: 0.1rem; }
+        .place-order-btn {
+            width: 100%;
+            padding: 0.8rem;
+            background: #25D366;
+            color: var(--white);
+            border-radius: var(--radius-full);
+            font-weight: 700;
+            font-size: 1rem;
+            margin-top: 1rem;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .place-order-btn:hover { background: #1DA851; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(37,211,102,0.3); }
+        .place-order-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .buynow-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            background: #FFF3E0;
+            color: #E65100;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.2rem 0.7rem;
+            border-radius: var(--radius-full);
+            margin-bottom: 0.8rem;
+        }
+        @media (min-width: 768px) { .checkout-layout { grid-template-columns: 2fr 1fr; } }
+        @media (max-width: 480px) {
+            .checkout-section { padding: 0.8rem; }
+            .form-row { grid-template-columns: 1fr; }
+            .checkout-summary .summary-items .checkout-item .item-img { width: 40px; height: 40px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="sticky-header">
+        <div class="container">
+            <div class="header-top">
+                <div class="header-left">
+                    <button class="hamburger" id="menuToggle" aria-label="Open menu"><i class="fas fa-bars"></i></button>
+                </div>
+                <div class="header-center">
+                    <div class="brand-logo-placeholder">
+                        <img src="logo.png" alt="Sweet & Sour Logo" id="brandLogo" onerror="this.style.display='none'" />
+                    </div>
+                </div>
+                <div class="header-right">
+                    <a href="account.html" class="icon-wrap account-icon" id="profileIcon" aria-label="Profile">
+                        <div class="profile-avatar" id="profileAvatar">
+                            <div class="avatar-initial" id="avatarInitial">U</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <nav class="sidebar-drawer" id="sidebarDrawer">
+        <button class="sidebar-close" id="sidebarClose"><i class="fas fa-times"></i></button>
+        <div class="drawer-brand"><span class="brand-sweet">Sweet</span><span class="brand-and">&amp;</span><span class="brand-sour">Sour</span></div>
+        <ul class="drawer-nav">
+            <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="categories.html"><i class="fas fa-th-large"></i> Categories</a></li>
+            <li><a href="wishlist.html"><i class="far fa-heart"></i> Wishlist</a></li>
+            <li><a href="cart.html"><i class="fas fa-shopping-bag"></i> Cart</a></li>
+            <li><a href="account.html"><i class="far fa-user"></i> My Account</a></li>
+            <li><a href="orders.html"><i class="fas fa-shopping-bag"></i> Orders</a></li>
+            <li><a href="contact.html"><i class="fas fa-phone"></i> Contact</a></li>
+            <li id="adminNavItem" style="display:none;"><a href="admin.html"><i class="fas fa-shield-alt"></i> Admin</a></li>
+        </ul>
+    </nav>
+
+    <main class="container checkout-page">
+        <div class="checkout-header">
+            <a href="cart.html" class="back-link" aria-label="Back"><i class="fas fa-arrow-left"></i></a>
+            <h1>Checkout</h1>
+        </div>
+        <div id="checkoutContainer">
+            <div class="skeleton-card" style="min-height:200px;"><div class="skeleton-line medium"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
+        </div>
+    </main>
+
+    <div class="toast-container" id="toast"></div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import {
+            auth, db,
+            onAuthStateChanged,
+            doc, getDoc, collection, addDoc, Timestamp,
+            getProductUrl,
+            getBaseUrl
+        } from './firebase-config.js';
+
+        const container = document.getElementById('checkoutContainer');
+        const toast = document.getElementById('toast');
+        const avatarInitial = document.getElementById('avatarInitial');
+        const profileIcon = document.getElementById('profileIcon');
+
+        let toastTimer = null;
+        let currentUser = null;
+        let userData = null;
+        let isBuyNowMode = false;
+
+        const BUSINESS_WHATSAPP = '917698242215';
+
+        function getCart() { try { return JSON.parse(localStorage.getItem('ss_cart_v1')) || []; } catch { return []; } }
+        function saveCart(cart) { localStorage.setItem('ss_cart_v1', JSON.stringify(cart)); }
+        function getBuyNowItems() {
+            try { return JSON.parse(sessionStorage.getItem('ss_buynow_v1')) || []; } catch { return []; }
+        }
+        function clearBuyNowItems() {
+            sessionStorage.removeItem('ss_buynow_v1');
+        }
+
+        function getActiveCheckoutItems() {
+            if (isBuyNowMode) {
+                const bnItems = getBuyNowItems();
+                if (bnItems.length > 0) return bnItems;
+                return [];
+            }
+            return getCart();
+        }
+
+        async function loadUserData(user) {
+            if (!user) { userData = null; currentUser = null; updateProfileAvatar(); return; }
+            currentUser = user;
+            try {
+                const docRef = doc(db, 'users', user.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) { userData = docSnap.data(); }
+                else { userData = { name: user.displayName || user.email?.split('@')[0] || 'User', role: 'customer' }; }
+            } catch (error) {
+                if (error.code === 'permission-denied') {
+                    console.warn('🔒 User doc read denied — using fallback data');
+                }
+                userData = { name: user.displayName || user.email?.split('@')[0] || 'User', role: 'customer' };
+            }
+            updateProfileAvatar();
+        }
+
+        function updateProfileAvatar() {
+            if (!currentUser) { avatarInitial.textContent = 'U'; avatarInitial.className = 'avatar-initial'; profileIcon.href = 'login.html'; return; }
+            profileIcon.href = 'account.html';
+            if (userData && userData.role === 'admin') { avatarInitial.className = 'avatar-initial admin'; avatarInitial.textContent = 'A'; }
+            else if (userData && userData.name) { avatarInitial.className = 'avatar-initial'; avatarInitial.textContent = userData.name.charAt(0).toUpperCase(); }
+            else if (currentUser.email) { avatarInitial.className = 'avatar-initial'; avatarInitial.textContent = currentUser.email.charAt(0).toUpperCase(); }
+        }
+
+        function showToast(message, type = 'error') {
+            toast.textContent = message;
+            toast.className = `toast-container ${type}`;
+            toast.style.display = 'block';
+            requestAnimationFrame(() => toast.classList.add('show'));
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.style.display = 'none', 400); }, 3000);
+        }
+
+        function calculateTotals(cart) {
+            let subtotal = 0;
+            let totalDiscount = 0;
+            cart.forEach(item => {
+                const price = item.price || 0;
+                const qty = item.qty || 1;
+                const oldPrice = item.oldPrice || price;
+                subtotal += price * qty;
+                totalDiscount += Math.max(0, (oldPrice - price) * qty);
+            });
+            const total = subtotal - totalDiscount;
+            return { subtotal, totalDiscount, total };
+        }
+
+        function renderCheckout() {
+            const cart = getActiveCheckoutItems();
+
+            if (cart.length === 0) {
+                if (isBuyNowMode) {
+                    clearBuyNowItems();
+                    isBuyNowMode = false;
+                    window.location.href = 'cart.html';
+                    return;
+                }
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-shopping-bag"></i><h3>Your Cart is Empty</h3><p>Add items to your cart before checking out.</p><a href="products.html" class="btn-primary">Continue Shopping</a></div>`;
+                return;
+            }
+
+            if (!currentUser) {
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-lock"></i><h3>Please Login</h3><p>Login to proceed with checkout.</p><a href="login.html" class="btn-primary">Login</a></div>`;
+                return;
+            }
+
+            const totals = calculateTotals(cart);
+
+            let itemsHtml = cart.map(item => `
+                <div class="checkout-item">
+                    <div class="item-img"><img src="${item.image || 'placeholder-product.jpg'}" alt="${item.name}" onerror="this.src='placeholder-product.jpg'" /></div>
+                    <div class="item-info">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-meta">Qty: ${item.qty}${item.sku ? ' · SKU: ' + item.sku : ''}</div>
+                    </div>
+                    <div class="item-price">₹${(item.price * item.qty).toFixed(0)}</div>
+                </div>
+            `).join('');
+
+            const buyNowBadge = isBuyNowMode ? `<div class="buynow-badge"><i class="fas fa-bolt"></i> Direct Buy Now — existing cart will remain untouched</div>` : '';
+
+            container.innerHTML = `
+                <div class="checkout-layout">
+                    <div class="checkout-left">
+                        <div class="checkout-section">
+                            <div class="section-title"><i class="fas fa-user"></i> Customer Details</div>
+                            ${buyNowBadge}
+                            <form id="checkoutForm">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="fullName">Full Name *</label>
+                                        <input type="text" id="fullName" placeholder="John Doe" value="${userData?.name || ''}" required />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="phone">Phone Number *</label>
+                                        <input type="tel" id="phone" placeholder="9876543210" value="${userData?.phone || ''}" required />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="email">Email Address</label>
+                                    <input type="email" id="email" placeholder="your@email.com" value="${currentUser?.email || ''}" />
+                                </div>
+                                <div class="form-group">
+                                    <label for="address">Full Delivery Address *</label>
+                                    <textarea id="address" placeholder="House/Flat No, Street, Landmark, Area..." required></textarea>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="area">Area / Locality *</label>
+                                        <input type="text" id="area" placeholder="e.g. Bhagal, City Masala Exit" required />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="city">City *</label>
+                                        <input type="text" id="city" placeholder="Surat" required />
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="state">State *</label>
+                                        <input type="text" id="state" placeholder="Gujarat" required />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="pincode">Pincode *</label>
+                                        <input type="text" id="pincode" placeholder="395001" required />
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="checkout-summary">
+                        <h3>Order Summary</h3>
+                        <div class="summary-items">${itemsHtml}</div>
+                        <div class="summary-item"><span>Subtotal</span><span>₹${totals.subtotal.toFixed(0)}</span></div>
+                        ${totals.totalDiscount > 0 ? `<div class="summary-item" style="color:var(--accent);"><span>Discount</span><span>-₹${totals.totalDiscount.toFixed(0)}</span></div>` : ''}
+                        <div class="summary-item total"><span>Total</span><span>₹${totals.total.toFixed(0)}</span></div>
+                        <div class="delivery-note">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Delivery charges will be confirmed on WhatsApp after checking your delivery area.</span>
+                        </div>
+                        <button class="place-order-btn" id="placeOrderBtn">
+                            <span class="spinner" style="border-top-color:white;"></span>
+                            <span class="btn-text"><i class="fab fa-whatsapp"></i> Order on WhatsApp</span>
+                        </button>
+                        <p style="font-size:0.7rem;color:var(--gray-500);text-align:center;margin-top:0.5rem;">
+                            <i class="fas fa-shield-alt" style="color:var(--accent);"></i> Your order is secure
+                        </p>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('placeOrderBtn').addEventListener('click', placeOrder);
+        }
+
+        async function placeOrder() {
+            const fullName = document.getElementById('fullName').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const address = document.getElementById('address').value.trim();
+            const area = document.getElementById('area').value.trim();
+            const city = document.getElementById('city').value.trim();
+            const state = document.getElementById('state').value.trim();
+            const pincode = document.getElementById('pincode').value.trim();
+
+            if (!fullName || !phone || !address || !area || !city || !state || !pincode) { showToast('Please fill in all required fields', 'error'); return; }
+            if (!/^[0-9]{10}$/.test(phone)) { showToast('Please enter a valid 10-digit phone number', 'error'); return; }
+            if (!/^[0-9]{6}$/.test(pincode)) { showToast('Please enter a valid 6-digit pincode', 'error'); return; }
+
+            const cart = getActiveCheckoutItems();
+            if (cart.length === 0) { showToast('Your cart is empty', 'error'); return; }
+
+            const totals = calculateTotals(cart);
+            const orderId = 'SS' + Date.now().toString().slice(-8);
+
+            const order = {
+                id: orderId,
+                date: new Date().toISOString(),
+                status: 'pending',
+                customerId: currentUser.uid,
+                customerName: fullName,
+                phone: phone,
+                email: email || '',
+                address: address,
+                area: area,
+                city: city,
+                state: state,
+                pincode: pincode,
+                items: cart.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    price: item.price,
+                    qty: item.qty,
+                    image: item.image || '',
+                    sku: item.sku || ''
+                })),
+                subtotal: totals.subtotal,
+                discount: totals.totalDiscount,
+                delivery: 'To be confirmed',
+                total: totals.total,
+                createdAt: Timestamp.now(),
+                updatedAt: Timestamp.now()
+            };
+
+            const btn = document.getElementById('placeOrderBtn');
+            btn.classList.add('btn-loading');
+            btn.disabled = true;
+
+            try {
+                await addDoc(collection(db, 'orders'), order);
+            } catch (error) {
+                if (error.code === 'permission-denied') {
+                    console.warn('🔒 Order write denied — proceeding with WhatsApp order');
+                    showToast('Order saved locally. Sending via WhatsApp...', 'info');
+                } else {
+                    console.warn('Order save error:', error.message);
+                }
+                // Continue with WhatsApp regardless — orders also saved locally
+            }
+
+            try {
+                let orders = JSON.parse(localStorage.getItem('ss_orders_v1')) || [];
+                orders.push({
+                    ...order,
+                    createdAt: order.date,
+                    updatedAt: order.date
+                });
+                localStorage.setItem('ss_orders_v1', JSON.stringify(orders));
+            } catch (e) {
+                console.warn('Could not save to localStorage:', e);
+            }
+
+            if (isBuyNowMode) {
+                clearBuyNowItems();
+            } else {
+                saveCart([]);
+            }
+
+            const cartBadge = document.getElementById('cartBadge');
+            if (cartBadge && !isBuyNowMode) cartBadge.style.display = 'none';
+
+            let itemsList = cart.map(item => {
+                const productUrl = getProductUrl(item.id);
+                return `• ${item.name}\n  SKU: ${item.sku || 'N/A'}\n  Qty: ${item.qty} × ₹${item.price} = ₹${(item.price * item.qty).toFixed(0)}\n  Link: ${productUrl}\n  Image: ${item.image || 'N/A'}`;
+            }).join('\n\n');
+
+            let message = `🍬 *New Order — Sweet & Sour* 🍬\n\n`;
+            message += `📋 *Order ID:* ${orderId}\n\n`;
+            message += `🛒 *Products:*\n${itemsList}\n\n`;
+            message += `📊 *Subtotal:* ₹${totals.subtotal.toFixed(0)}\n`;
+            if (totals.totalDiscount > 0) message += `💰 *Discount:* -₹${totals.totalDiscount.toFixed(0)}\n`;
+            message += `🚚 *Delivery Charge:* To be confirmed\n`;
+            message += `💳 *Total (before delivery):* ₹${totals.total.toFixed(0)}\n\n`;
+            message += `👤 *Customer:*\n${fullName}\n📞 ${phone}\n📧 ${email || 'N/A'}\n\n`;
+            message += `📍 *Delivery Address:*\n${address}\nArea: ${area}\n${city}, ${state} - ${pincode}\n\n`;
+            message += `🙏 Thank you for ordering from Sweet & Sour!`;
+
+            showToast('Opening WhatsApp...', 'success');
+
+            setTimeout(() => {
+                window.open(`https://wa.me/${BUSINESS_WHATSAPP}?text=${encodeURIComponent(message)}`, '_blank');
+                btn.classList.remove('btn-loading');
+                btn.disabled = false;
+                setTimeout(() => { window.location.href = 'order-success.html?id=' + orderId; }, 500);
+            }, 800);
+        }
+
+        function updateBadges() {
+            const cart = getCart();
+            const cCount = cart.reduce((sum, item) => sum + (item.qty || 1), 0);
+            const badge = document.getElementById('cartBadge');
+            if (badge) {
+                if (cCount > 0) { badge.textContent = cCount; badge.style.display = 'block'; }
+                else { badge.style.display = 'none'; }
+            }
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        isBuyNowMode = urlParams.get('buynow') === '1';
+
+        onAuthStateChanged(auth, async (user) => {
+            await loadUserData(user);
+            renderCheckout();
+            updateBadges();
+        });
+
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'ss_cart_v1' && !isBuyNowMode) renderCheckout();
+        });
+
+        updateBadges();
+    </script>
+</body>
+</html>
